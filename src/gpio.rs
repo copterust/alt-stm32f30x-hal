@@ -86,6 +86,9 @@ pub struct AF14;
 /// Alternate function 15 (type state)
 pub struct AF15;
 
+/// GPIO port output speed (type state)
+pub struct HIGHSPEED;
+
 macro_rules! gpio {
     ($GPIOX:ident, $gpiox:ident, $gpioy:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
         $($PXi:ident: ($pxi:ident, $i:expr, $MODE:ty, $AFR:ident),)+
@@ -100,7 +103,7 @@ macro_rules! gpio {
             use rcc::AHB;
             use super::{
                 AF4, AF5, AF6, AF7, AF14, Floating, GpioExt, Input, OpenDrain,
-                Output, PullDown, PullUp, PushPull,
+                Output, PullDown, PullUp, PushPull, HIGHSPEED
             };
 
             /// GPIO parts
@@ -115,6 +118,8 @@ macro_rules! gpio {
                 pub otyper: OTYPER,
                 /// Opaque PUPDR register
                 pub pupdr: PUPDR,
+                /// Opaque OSPEEDR register
+                pub ospeedr: OSPEEDR,
                 $(
                     /// Pin
                     pub $pxi: $PXi<$MODE>,
@@ -135,10 +140,22 @@ macro_rules! gpio {
                         moder: MODER { _0: () },
                         otyper: OTYPER { _0: () },
                         pupdr: PUPDR { _0: () },
+                        ospeedr: OSPEEDR { _0: () },
                         $(
                             $pxi: $PXi { _mode: PhantomData },
                         )+
                     }
+                }
+            }
+
+            /// Opaque OSPEEDR register
+            pub struct OSPEEDR {
+                _0: (),
+            }
+
+            impl OSPEEDR {
+                pub(crate) fn ospeedr(&mut self) -> &$gpioy::OSPEEDR {
+                    unsafe { &(*$GPIOX::ptr()).ospeedr }
                 }
             }
 
@@ -249,6 +266,22 @@ macro_rules! gpio {
                         let offset = 4 * ($i % 8);
                         afr.afr().modify(|r, w| unsafe {
                             w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
+                        });
+
+                        $PXi { _mode: PhantomData }
+                    }
+
+                    /// Configures the pin as high speed output
+                    pub fn into_highspeed(
+                        self,
+                        ospeedr: &mut OSPEEDR,
+                    ) -> $PXi<HIGHSPEED> {
+                        let speed = 0b11;
+                        let offset = 2 * $i;
+
+                        ospeedr.modify(|r, w| unsafe {
+                            w.bits((r.bits()
+                                & !(0b11 << offset)) | (speed << offset))
                         });
 
                         $PXi { _mode: PhantomData }
