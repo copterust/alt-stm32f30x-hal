@@ -279,7 +279,7 @@ macro_rules! gpio {
                         let speed = 0b11;
                         let offset = 2 * $i;
 
-                        ospeedr.modify(|r, w| unsafe {
+                        ospeedr.ospeedr().modify(|r, w| unsafe {
                             w.bits((r.bits()
                                 & !(0b11 << offset)) | (speed << offset))
                         });
