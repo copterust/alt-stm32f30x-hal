@@ -1,9 +1,12 @@
 //! Timers
 
+use cortex_m::peripheral::syst::SystClkSource;
+use cortex_m::peripheral::SYST;
 use cast::{u16, u32};
 use hal::timer::{CountDown, Periodic};
 use nb;
 use stm32f30x::{TIM2, TIM3, TIM4, TIM6, TIM7};
+
 
 use rcc::{APB1, Clocks};
 use time::Hertz;
@@ -20,6 +23,61 @@ pub enum Event {
     /// Timer timed out / count down ended
     TimeOut,
 }
+
+impl Timer<SYST> {
+    /// System
+    pub fn syst<T>(mut syst: SYST, timeout: T, clocks: Clocks) -> Self
+    where
+        T: Into<Hertz>,
+    {
+        syst.set_clock_source(SystClkSource::Core);
+        let mut timer = Timer { tim: syst, clocks, timeout: Hertz(0)};
+        timer.start(timeout);
+        timer
+    }
+
+    /// Starts listening for an `event`
+    pub fn listen(&mut self, event: Event) {
+        match event {
+            Event::TimeOut => self.tim.enable_interrupt(),
+        }
+    }
+
+    /// Stops listening for an `event`
+    pub fn unlisten(&mut self, event: Event) {
+        match event {
+            Event::TimeOut => self.tim.disable_interrupt(),
+        }
+    }
+}
+
+impl CountDown for Timer<SYST> {
+    type Time = Hertz;
+
+    fn start<T>(&mut self, timeout: T)
+    where
+        T: Into<Hertz>,
+    {
+        let rvr = self.clocks.sysclk().0 / timeout.into().0 - 1;
+
+        assert!(rvr < (1 << 24));
+
+        self.tim.set_reload(rvr);
+        self.tim.clear_current();
+        self.tim.enable_counter();
+    }
+
+    fn wait(&mut self) -> nb::Result<(), !> {
+        if self.tim.has_wrapped() {
+            Ok(())
+        } else {
+            Err(nb::Error::WouldBlock)
+        }
+    }
+}
+
+impl Periodic for Timer<SYST> {}
+
 
 macro_rules! hal {
     ($($TIM:ident: ($tim:ident, $timXen:ident, $timXrst:ident),)+) => {
