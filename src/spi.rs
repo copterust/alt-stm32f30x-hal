@@ -36,19 +36,19 @@ pub unsafe trait MisoPin<SPI> {}
 pub unsafe trait MosiPin<SPI> {}
 
 unsafe impl SckPin<SPI1> for PA5<AF5> {}
-// unsafe impl SckPin<SPI1> for PB3<AF5> {}
+unsafe impl SckPin<SPI1> for PB3<AF5> {}
 
 unsafe impl SckPin<SPI2> for PB13<AF5> {}
 
-// unsafe impl SckPin<SPI3> for PB3<AF6> {}
+unsafe impl SckPin<SPI3> for PB3<AF6> {}
 unsafe impl SckPin<SPI3> for PC10<AF6> {}
 
 unsafe impl MisoPin<SPI1> for PA6<AF5> {}
-// unsafe impl MisoPin<SPI1> for PB4<AF5> {}
+unsafe impl MisoPin<SPI1> for PB4<AF5> {}
 
 unsafe impl MisoPin<SPI2> for PB14<AF5> {}
 
-// unsafe impl MisoPin<SPI3> for PB4<AF6> {}
+unsafe impl MisoPin<SPI3> for PB4<AF6> {}
 unsafe impl MisoPin<SPI3> for PC11<AF6> {}
 
 unsafe impl MosiPin<SPI1> for PA7<AF5> {}
