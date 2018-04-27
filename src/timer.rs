@@ -56,7 +56,7 @@ impl CountDown for Timer<SYST> {
 
     fn start<T>(&mut self, timeout: T)
     where
-        T: Into<Hertz>,
+        T: Into<Self::Time>,
     {
         let rvr = self.clocks.sysclk().0 / timeout.into().0 - 1;
 
