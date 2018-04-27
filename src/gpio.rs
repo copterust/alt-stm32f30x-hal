@@ -559,9 +559,9 @@ gpio!(GPIOA, gpioa, gpioa, iopaen, ioparst, PAx, [
     PA11: (pa11, 11, Input<Floating>, AFRH),
     PA12: (pa12, 12, Input<Floating>, AFRH),
     // TODO these are configured as JTAG pins
-    // PA13: (13, Input<Floating>),
-    // PA14: (14, Input<Floating>),
-    // PA15: (15, Input<Floating>),
+    PA13: (pb13, 13, Input<Floating>, AFRH),
+    PA14: (pb14, 14, Input<Floating>, AFRH),
+    PA15: (pb15, 15, Input<Floating>, AFRH),
 ]);
 
 gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
@@ -569,8 +569,8 @@ gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
     PB1: (pb1, 1, Input<Floating>, AFRL),
     PB2: (pb2, 2, Input<Floating>, AFRL),
     // TODO these are configured as JTAG pins
-    // PB3: (3, Input<Floating>),
-    // PB4: (4, Input<Floating>),
+    PB3: (pb3, 3, Input<Floating>, AFRL),
+    PB4: (pb4, 4, Input<Floating>, AFRL),
     PB5: (pb5, 5, Input<Floating>, AFRL),
     PB6: (pb6, 6, Input<Floating>, AFRL),
     PB7: (pb7, 7, Input<Floating>, AFRL),
