@@ -186,16 +186,18 @@ macro_rules! hal {
 
                     // START and prepare to send `bytes`
                     self.i2c.cr2.write(|w| {
-                        w.sadd1()
-                            .bits(addr)
-                            .rd_wrn()
-                            .clear_bit()
-                            .nbytes()
-                            .bits(bytes.len() as u8)
-                            .start()
-                            .set_bit()
-                            .autoend()
-                            .set_bit()
+                        unsafe {
+                            w.sadd1()
+                                .bits(addr)
+                                .rd_wrn()
+                                .clear_bit()
+                                .nbytes()
+                                .bits(bytes.len() as u8)
+                                .start()
+                                .set_bit()
+                                .autoend()
+                                .set_bit()
+                        }
                     });
 
                     for byte in bytes {
@@ -204,7 +206,7 @@ macro_rules! hal {
                         busy_wait!(self.i2c, txis);
 
                         // put byte on the wire
-                        self.i2c.txdr.write(|w| w.txdata().bits(*byte));
+                        self.i2c.txdr.write(|w| unsafe { w.txdata().bits(*byte) });
                     }
 
                     // Wait until the last transmission is finished ???
@@ -234,16 +236,18 @@ macro_rules! hal {
 
                     // START and prepare to send `bytes`
                     self.i2c.cr2.write(|w| {
-                        w.sadd1()
-                            .bits(addr)
-                            .rd_wrn()
-                            .clear_bit()
-                            .nbytes()
-                            .bits(bytes.len() as u8)
-                            .start()
-                            .set_bit()
-                            .autoend()
-                            .clear_bit()
+                        unsafe {
+                            w.sadd1()
+                                .bits(addr)
+                                .rd_wrn()
+                                .clear_bit()
+                                .nbytes()
+                                .bits(bytes.len() as u8)
+                                .start()
+                                .set_bit()
+                                .autoend()
+                                .clear_bit()
+                        }
                     });
 
                     for byte in bytes {
@@ -252,7 +256,7 @@ macro_rules! hal {
                         busy_wait!(self.i2c, txis);
 
                         // put byte on the wire
-                        self.i2c.txdr.write(|w| w.txdata().bits(*byte));
+                        self.i2c.txdr.write(|w| unsafe {w.txdata().bits(*byte) });
                     }
 
                     // Wait until the last transmission is finished
@@ -260,16 +264,18 @@ macro_rules! hal {
 
                     // reSTART and prepare to receive bytes into `buffer`
                     self.i2c.cr2.write(|w| {
-                        w.sadd1()
-                            .bits(addr)
-                            .rd_wrn()
-                            .set_bit()
-                            .nbytes()
-                            .bits(buffer.len() as u8)
-                            .start()
-                            .set_bit()
-                            .autoend()
-                            .set_bit()
+                        unsafe {
+                            w.sadd1()
+                                .bits(addr)
+                                .rd_wrn()
+                                .set_bit()
+                                .nbytes()
+                                .bits(buffer.len() as u8)
+                                .start()
+                                .set_bit()
+                                .autoend()
+                                .set_bit()
+                        }
                     });
 
                     for byte in buffer {
