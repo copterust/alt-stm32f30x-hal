@@ -195,7 +195,7 @@ macro_rules! hal {
                 }
 
                 fn get_duty(&self) -> u16 {
-                    unsafe { (*$TIMX::ptr()).ccr1.read().ccr1h().bits() }
+                    unsafe { (*$TIMX::ptr()).ccr1.read().ccr1l().bits() }
                 }
 
                 fn get_max_duty(&self) -> u16 {
@@ -203,7 +203,7 @@ macro_rules! hal {
                 }
 
                 fn set_duty(&mut self, duty: u16) {
-                    unsafe { (*$TIMX::ptr()).ccr1.write(|w| w.ccr1h().bits(duty)) }
+                    unsafe { (*$TIMX::ptr()).ccr1.write(|w| w.ccr1l().bits(duty)) }
                 }
             }
 
@@ -219,7 +219,7 @@ macro_rules! hal {
                 }
 
                 fn get_duty(&self) -> u16 {
-                    unsafe { (*$TIMX::ptr()).ccr2.read().ccr2h().bits() }
+                    unsafe { (*$TIMX::ptr()).ccr2.read().ccr2l().bits() }
                 }
 
                 fn get_max_duty(&self) -> u16 {
@@ -227,7 +227,7 @@ macro_rules! hal {
                 }
 
                 fn set_duty(&mut self, duty: u16) {
-                    unsafe { (*$TIMX::ptr()).ccr2.write(|w| w.ccr2h().bits(duty)) }
+                    unsafe { (*$TIMX::ptr()).ccr2.write(|w| w.ccr2l().bits(duty)) }
                 }
             }
 
@@ -243,7 +243,7 @@ macro_rules! hal {
                 }
 
                 fn get_duty(&self) -> u16 {
-                    unsafe { (*$TIMX::ptr()).ccr3.read().ccr3h().bits() }
+                    unsafe { (*$TIMX::ptr()).ccr3.read().ccr3l().bits() }
                 }
 
                 fn get_max_duty(&self) -> u16 {
@@ -251,7 +251,7 @@ macro_rules! hal {
                 }
 
                 fn set_duty(&mut self, duty: u16) {
-                    unsafe { (*$TIMX::ptr()).ccr3.write(|w| w.ccr3h().bits(duty)) }
+                    unsafe { (*$TIMX::ptr()).ccr3.write(|w| w.ccr3l().bits(duty)) }
                 }
             }
 
@@ -267,7 +267,7 @@ macro_rules! hal {
                 }
 
                 fn get_duty(&self) -> u16 {
-                    unsafe { (*$TIMX::ptr()).ccr4.read().ccr4h().bits() }
+                    unsafe { (*$TIMX::ptr()).ccr4.read().ccr4l().bits() }
                 }
 
                 fn get_max_duty(&self) -> u16 {
@@ -275,7 +275,7 @@ macro_rules! hal {
                 }
 
                 fn set_duty(&mut self, duty: u16) {
-                    unsafe { (*$TIMX::ptr()).ccr4.write(|w| w.ccr4h().bits(duty)) }
+                    unsafe { (*$TIMX::ptr()).ccr4.write(|w| w.ccr4l().bits(duty)) }
                 }
             }
         )+
