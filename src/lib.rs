@@ -34,11 +34,13 @@ extern crate nb;
 pub extern crate stm32f30x;
 extern crate void;
 
+pub mod bb;
 pub mod delay;
 pub mod flash;
 pub mod gpio;
 pub mod i2c;
 pub mod prelude;
+pub mod pwm;
 pub mod rcc;
 pub mod serial;
 pub mod spi;
