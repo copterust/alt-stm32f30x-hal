@@ -2,7 +2,7 @@
 use core::marker::PhantomData;
 use core::mem;
 
-use cast::{u16, u32};
+use cast::u16;
 use hal;
 use stm32f30x::{TIM2, TIM3, TIM4};
 
@@ -164,9 +164,9 @@ macro_rules! hal {
                 let clk = clocks.pclk1().0 * if clocks.ppre1() == 1 { 1 } else { 2 };
                 let freq = freq.0;
                 let ticks = clk / freq;
-                let psc = u16(ticks / (1 << 16)).unwrap();
-                tim.psc.write(|w| unsafe { w.psc().bits(psc) });
-                let arr = ticks / u32(psc + 1);
+                let psc = ticks / (1 << 16);
+                tim.psc.write(|w| unsafe { w.psc().bits(u16(psc).unwrap()) });
+                let arr = ticks / (psc + 1);
                 tim.arr.write(|w| unsafe { w.bits(arr) });
 
                 tim.cr1.write(|w| unsafe {
