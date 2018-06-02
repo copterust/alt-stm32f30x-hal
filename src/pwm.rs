@@ -166,8 +166,8 @@ macro_rules! hal {
                 let ticks = clk / freq;
                 let psc = u16(ticks / (1 << 16)).unwrap();
                 tim.psc.write(|w| unsafe { w.psc().bits(psc) });
-                let arr = u16(ticks / u32(psc + 1)).unwrap();
-                tim.arr.write(|w| unsafe { w.arrh().bits(arr) });
+                let arr = ticks / u32(psc + 1);
+                tim.arr.write(|w| unsafe { w.bits(arr) });
 
                 tim.cr1.write(|w| unsafe {
                     w.cms()
