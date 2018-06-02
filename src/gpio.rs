@@ -102,7 +102,7 @@ macro_rules! gpio {
 
             use rcc::AHB;
             use super::{
-                AF4, AF5, AF6, AF7, AF14, Floating, GpioExt, Input, OpenDrain,
+                AF1, AF2, AF4, AF5, AF6, AF7, AF14, Floating, GpioExt, Input, OpenDrain,
                 Output, PullDown, PullUp, PushPull, HIGHSPEED
             };
 
@@ -239,6 +239,53 @@ macro_rules! gpio {
                 }
 
                 impl<MODE> $PXi<MODE> {
+                    /// Configures the pin to serve as alternate function 1 (AF1)
+                    pub fn into_af1(
+                        self,
+                        moder: &mut MODER,
+                        afr: &mut $AFR,
+                    ) -> $PXi<AF1> {
+                        let offset = 2 * $i;
+
+                        // alternate function mode
+                        let mode = 0b0001;
+                        moder.moder().modify(|r, w| unsafe {
+                            w.bits((r.bits() & !(0b11 << offset)) | (mode << offset))
+                        });
+
+                        let af = 4;
+                        let offset = 4 * ($i % 8);
+                        afr.afr().modify(|r, w| unsafe {
+                            w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
+                        });
+
+                        $PXi { _mode: PhantomData }
+                    }
+
+
+                    /// Configures the pin to serve as alternate function 2 (AF2)
+                    pub fn into_af2(
+                        self,
+                        moder: &mut MODER,
+                        afr: &mut $AFR,
+                    ) -> $PXi<AF2> {
+                        let offset = 2 * $i;
+
+                        // alternate function mode
+                        let mode = 0b0010;
+                        moder.moder().modify(|r, w| unsafe {
+                            w.bits((r.bits() & !(0b11 << offset)) | (mode << offset))
+                        });
+
+                        let af = 4;
+                        let offset = 4 * ($i % 8);
+                        afr.afr().modify(|r, w| unsafe {
+                            w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
+                        });
+
+                        $PXi { _mode: PhantomData }
+                    }
+
                     /// Configures the pin to serve as alternate function 4 (AF4)
                     pub fn into_af4(
                         self,
@@ -540,9 +587,9 @@ gpio!(GPIOA, gpioa, gpioa, iopaen, ioparst, PAx, [
     PA10: (pa10, 10, Input<Floating>, AFRH),
     PA11: (pa11, 11, Input<Floating>, AFRH),
     PA12: (pa12, 12, Input<Floating>, AFRH),
-    PA13: (pb13, 13, Input<Floating>, AFRH),
-    PA14: (pb14, 14, Input<Floating>, AFRH),
-    PA15: (pb15, 15, Input<Floating>, AFRH),
+    PA13: (pa13, 13, Input<Floating>, AFRH),
+    PA14: (pa14, 14, Input<Floating>, AFRH),
+    PA15: (pa15, 15, Input<Floating>, AFRH),
 ]);
 
 gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
