@@ -10,9 +10,12 @@ version = "0.2.0"
 
 [dependencies]
 cortex-m = "0.5.0"
-embedded-hal = "0.2.0"
 nb = "0.1.0"
 stm32f30x = "0.7.0"
+
+[dependencies.embedded-hal]
+version = "0.2.1"
+features = ["unproven"]
 
 [dependencies.void]
 default-features = false
