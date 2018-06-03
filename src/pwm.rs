@@ -70,39 +70,67 @@ impl Pins<TIM4> for (PB6<AF2>, PB7<AF2>, PB8<AF2>, PB9<AF2>) {
 /// PwmExt
 pub trait PwmExt: Sized {
     /// pwm
-    fn pwm<PINS, T>(self, PINS, frequency: T, clocks: Clocks, apb: &mut APB1) -> PINS::Channels
+    fn pwm<PINS, T>(
+        self,
+        PINS,
+        frequency: T,
+        clocks: Clocks,
+        apb: &mut APB1,
+        mode: PwmMode,
+    ) -> PINS::Channels
     where
         PINS: Pins<Self>,
         T: Into<Hertz>;
 }
 
 impl PwmExt for TIM2 {
-    fn pwm<PINS, T>(self, _pins: PINS, freq: T, clocks: Clocks, apb: &mut APB1) -> PINS::Channels
+    fn pwm<PINS, T>(
+        self,
+        _pins: PINS,
+        freq: T,
+        clocks: Clocks,
+        apb: &mut APB1,
+        mode: PwmMode,
+    ) -> PINS::Channels
     where
         PINS: Pins<Self>,
         T: Into<Hertz>,
     {
-        tim2(self, _pins, freq.into(), clocks, apb)
+        tim2(self, _pins, freq.into(), clocks, apb, mode)
     }
 }
 
 impl PwmExt for TIM3 {
-    fn pwm<PINS, T>(self, _pins: PINS, freq: T, clocks: Clocks, apb: &mut APB1) -> PINS::Channels
+    fn pwm<PINS, T>(
+        self,
+        _pins: PINS,
+        freq: T,
+        clocks: Clocks,
+        apb: &mut APB1,
+        mode: PwmMode,
+    ) -> PINS::Channels
     where
         PINS: Pins<Self>,
         T: Into<Hertz>,
     {
-        tim3(self, _pins, freq.into(), clocks, apb)
+        tim3(self, _pins, freq.into(), clocks, apb, mode)
     }
 }
 
 impl PwmExt for TIM4 {
-    fn pwm<PINS, T>(self, _pins: PINS, freq: T, clocks: Clocks, apb: &mut APB1) -> PINS::Channels
+    fn pwm<PINS, T>(
+        self,
+        _pins: PINS,
+        freq: T,
+        clocks: Clocks,
+        apb: &mut APB1,
+        mode: PwmMode,
+    ) -> PINS::Channels
     where
         PINS: Pins<Self>,
         T: Into<Hertz>,
     {
-        tim4(self, _pins, freq.into(), clocks, apb)
+        tim4(self, _pins, freq.into(), clocks, apb, mode)
     }
 }
 
@@ -121,8 +149,25 @@ pub struct C3;
 /// C4
 pub struct C4;
 
-const PWM1: u8 = 6;
-// const PWM2: u8 = 7;
+/// Pwm mode
+/// With default channel output polarity,
+/// the PWM2 output mode gives the typical pulse waveform,
+/// like a delay for a given time, then a pulse with given duration.
+/// For inversed polarity, either the channel output polarity should
+/// be inversed or the PWM1 output mode should be used.
+#[derive(Clone, Copy)]
+pub enum PwmMode {
+    /// PWM1
+    Pwm1 = 0x00060,
+    /// PWM2
+    Pwm2 = 0x00070,
+}
+
+impl PwmMode {
+    fn bits(&self) -> u8 {
+        *self as u8
+    }
+}
 
 macro_rules! hal {
     ($($TIMX:ident: ($timX:ident, $timXen:ident, $timXrst:ident),)+) => {
@@ -133,6 +178,7 @@ macro_rules! hal {
                 freq: Hertz,
                 clocks: Clocks,
                 apb: &mut APB1,
+                mode: PwmMode
             ) -> PINS::Channels
             where
                 PINS: Pins<$TIMX>,
@@ -143,22 +189,22 @@ macro_rules! hal {
 
                 if PINS::C1 {
                     tim.ccmr1_output
-                        .modify(|_, w| unsafe { w.oc1pe().set_bit().oc1m().bits(PWM1) });
+                        .modify(|_, w| unsafe { w.oc1pe().set_bit().oc1m().bits(mode.bits()) });
                 }
 
                 if PINS::C2 {
                     tim.ccmr1_output
-                        .modify(|_, w| unsafe { w.oc2pe().set_bit().oc2m().bits(PWM1) });
+                        .modify(|_, w| unsafe { w.oc2pe().set_bit().oc2m().bits(mode.bits()) });
                 }
 
                 if PINS::C3 {
                     tim.ccmr2_output
-                        .modify(|_, w| unsafe { w.oc3pe().set_bit().oc3m().bits(PWM1) });
+                        .modify(|_, w| unsafe { w.oc3pe().set_bit().oc3m().bits(mode.bits()) });
                 }
 
                 if PINS::C4 {
                     tim.ccmr2_output
-                        .modify(|_, w| unsafe { w.oc4pe().set_bit().oc4m().bits(PWM1) });
+                        .modify(|_, w| unsafe { w.oc4pe().set_bit().oc4m().bits(mode.bits()) });
                 }
 
                 let clk = clocks.pclk1().0 * if clocks.ppre1() == 1 { 1 } else { 2 };
