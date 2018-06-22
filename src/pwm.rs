@@ -9,6 +9,7 @@ use stm32f30x::{TIM2, TIM3, TIM4};
 use bb;
 use gpio::gpioa::{PA0, PA1, PA2, PA3, PA6, PA7};
 use gpio::gpiob::{PB0, PB1, PB6, PB7, PB8, PB9};
+use gpio::gpioc::{PC6, PC7, PC8, PC9 };
 use gpio::{AF1, AF2};
 use rcc::{APB1, Clocks};
 use time::Hertz;
