@@ -43,7 +43,7 @@ impl Pins<TIM2> for PA0<AF2> {
     type Channels = Pwm<TIM2, C1>;
 }
 
-impl Pins<TIM3> for (PA6<AF2>, PA7<AF2>, PB0<AF2>, PB1<AF2>) {
+impl Pins<TIM3> for (PC6<AF2>, PC7<AF2>, PC8<AF2>, PC9<AF2>) {
     const C1: bool = true;
     const C2: bool = true;
     const C3: bool = true;
