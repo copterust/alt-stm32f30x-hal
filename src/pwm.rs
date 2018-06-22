@@ -238,6 +238,7 @@ macro_rules! hal {
                 }
 
                 fn enable(&mut self) {
+                    unsafe { bb::set(&(*$TIMX::ptr()).bdtr, 15) }
                     unsafe { bb::set(&(*$TIMX::ptr()).ccer, 0) }
                 }
 
