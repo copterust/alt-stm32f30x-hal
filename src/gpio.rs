@@ -87,7 +87,39 @@ pub struct AF14;
 pub struct AF15;
 
 /// GPIO port output speed (type state)
-pub struct HIGHSPEED;
+// pub struct HIGHSPEED;
+
+/// Speeds
+pub trait Speed {
+    /// returns bits
+    fn to_speed_bits(self) -> u32;
+}
+
+/// speed
+pub mod speed {
+    use super::Speed;
+    /// low
+    pub struct Low;
+    impl Speed for Low {
+        fn to_speed_bits(self) -> u32 {
+            return 0b00;
+        }
+    }
+    /// medium
+    pub struct Medium;
+    impl Speed for Medium {
+        fn to_speed_bits(self) -> u32 {
+            return 0b01;
+        }
+    }
+    /// high
+    pub struct High;
+    impl Speed for High {
+        fn to_speed_bits(self) -> u32 {
+            return 0b11;
+        }
+    }
+}
 
 macro_rules! gpio {
     ($GPIOX:ident, $gpiox:ident, $gpioy:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
@@ -103,7 +135,7 @@ macro_rules! gpio {
             use rcc::AHB;
             use super::{
                 AF1, AF2, AF4, AF5, AF6, AF7, AF14, Floating, GpioExt, Input, OpenDrain,
-                Output, PullDown, PullUp, PushPull, HIGHSPEED
+                Output, PullDown, PullUp, PushPull, Speed
             };
 
             /// GPIO parts
@@ -309,22 +341,6 @@ macro_rules! gpio {
                         $PXi { _mode: PhantomData }
                     }
 
-                    /// Configures the pin as high speed output
-                    pub fn into_highspeed(
-                        self,
-                        ospeedr: &mut OSPEEDR,
-                    ) -> $PXi<HIGHSPEED> {
-                        let speed = 0b11;
-                        let offset = 2 * $i;
-
-                        ospeedr.ospeedr().modify(|r, w| unsafe {
-                            w.bits((r.bits()
-                                & !(0b11 << offset)) | (speed << offset))
-                        });
-
-                        $PXi { _mode: PhantomData }
-                    }
-
                     /// Configures the pin to serve as alternate function 5 (AF5)
                     pub fn into_af5(
                         self,
@@ -414,6 +430,24 @@ macro_rules! gpio {
 
                         afr.afr().modify(|r, w| unsafe {
                             w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
+                        });
+
+                        $PXi { _mode: PhantomData }
+                    }
+
+
+                    /// Configures pin's speed
+                    pub fn set_speed<T : Speed>(
+                        self,
+                        ospeedr: &mut OSPEEDR,
+                        speed: T
+                    ) -> Self {
+                        let speed = speed.to_speed_bits(); ;
+                        let offset = 2 * $i;
+
+                        ospeedr.ospeedr().modify(|r, w| unsafe {
+                            w.bits((r.bits()
+                                & !(0b11 << offset)) | (speed << offset))
                         });
 
                         $PXi { _mode: PhantomData }
