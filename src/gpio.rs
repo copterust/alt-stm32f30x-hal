@@ -7,6 +7,430 @@ use core::marker::PhantomData;
 
 use rcc::AHB;
 
+/// Supa mod
+pub mod supa {
+    use bobbin_bits::*;
+    use core::marker::PhantomData;
+    use rcc::AHB;
+    /// Trait for pin mode
+    pub trait PinMode {
+        /// Convert type state into actual bits
+        fn pin_mode(&self) -> U2;
+    }
+
+    /// Input
+    pub struct Input;
+    impl PinMode for Input {
+        /// bits
+        fn pin_mode(&self) -> U2 {
+            U2::B00
+        }
+    }
+
+    /// Output
+    pub struct Output<OT: OutputType, OS: OutputSpeed> {
+        _output_mode: PhantomData<OT>,
+        _output_speed: PhantomData<OS>,
+    }
+    impl<OT: OutputType, OS: OutputSpeed> PinMode for Output<OT, OS> {
+        fn pin_mode(&self) -> U2 {
+            U2::B01
+        }
+    }
+
+    /// Alternating function
+    pub struct AltFn<AN: AltFnNum, OT: OutputType, OS: OutputSpeed> {
+        _afnum: PhantomData<AN>,
+        _output_mode: PhantomData<OT>,
+        _output_speed: PhantomData<OS>,
+    }
+    impl<AN: AltFnNum, OT: OutputType, OS: OutputSpeed> PinMode for AltFn<AN, OT, OS> {
+        fn pin_mode(&self) -> U2 {
+            U2::B10
+        }
+    }
+
+    /// Analog
+    pub struct Analog;
+    impl PinMode for Analog {
+        fn pin_mode(&self) -> U2 {
+            U2::B11
+        }
+    }
+
+    /// Pull (pin resistor state)
+    pub trait PullType {
+        /// pull
+        fn pull_type(&self) -> U2;
+    }
+
+    /// No pull; floating
+    pub struct PullNone;
+    impl PullType for PullNone {
+        fn pull_type(&self) -> U2 {
+            U2::B00
+        }
+    }
+
+    /// Pull up
+    pub struct PullUp;
+    impl PullType for PullUp {
+        fn pull_type(&self) -> U2 {
+            U2::B01
+        }
+    }
+
+    /// Pull down
+    pub struct PullDown;
+    impl PullType for PullDown {
+        fn pull_type(&self) -> U2 {
+            U2::B10
+        }
+    }
+
+    /// Reserved
+    pub struct PullReserved;
+    impl PullType for PullReserved {
+        fn pull_type(&self) -> U2 {
+            U2::B11
+        }
+    }
+
+    /// Configures output speed
+    pub trait OutputSpeed {
+        /// Converts type state to actual bits
+        fn output_speed(&self) -> U2;
+    }
+
+    /// Low speed
+    pub struct LowSpeed;
+    impl OutputSpeed for LowSpeed {
+        fn output_speed(&self) -> U2 {
+            U2::B00
+        }
+    }
+
+    /// Medium  speed
+    pub struct MediumSpeed;
+    impl OutputSpeed for MediumSpeed {
+        fn output_speed(&self) -> U2 {
+            U2::B01
+        }
+    }
+
+    /// Fast speed
+    pub struct FastSpeed;
+    impl OutputSpeed for FastSpeed {
+        fn output_speed(&self) -> U2 {
+            U2::B10
+        }
+    }
+
+    /// High speed
+    pub struct HighSpeed;
+    impl OutputSpeed for HighSpeed {
+        fn output_speed(&self) -> U2 {
+            U2::B11
+        }
+    }
+
+    /// Output type
+    pub trait OutputType {
+        /// converts type state to actual type
+        fn output_type(&self) -> U1;
+    }
+
+    /// Push pull
+    pub struct PushPull;
+    impl OutputType for PushPull {
+        fn output_type(&self) -> U1 {
+            U1::B0
+        }
+    }
+
+    /// Open drain
+    pub struct OpenDrain;
+    impl OutputType for OpenDrain {
+        fn output_type(&self) -> U1 {
+            U1::B1
+        }
+    }
+
+    /// Alt Fn Register (low or high)
+    pub enum AltFnRegister {
+        /// Low
+        Low = 0x20,
+        /// High
+        High = 0x24,
+    }
+
+    /// AltFn number
+    pub trait AltFnNum {
+        /// converts type state
+        fn alt_fn_num(&self) -> U4;
+    }
+
+    /// AF0
+    pub struct AF0;
+    impl AltFnNum for AF0 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0000
+        }
+    }
+
+    /// AF1
+    pub struct AF1;
+    impl AltFnNum for AF1 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0001
+        }
+    }
+
+    /// AF2
+    pub struct AF2;
+    impl AltFnNum for AF2 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0010
+        }
+    }
+
+    /// AF3
+    pub struct AF3;
+    impl AltFnNum for AF3 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0011
+        }
+    }
+
+    /// AF4
+    pub struct AF4;
+    impl AltFnNum for AF4 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0100
+        }
+    }
+
+    /// AF5
+    pub struct AF5;
+    impl AltFnNum for AF5 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0101
+        }
+    }
+
+    /// AF6
+    pub struct AF6;
+    impl AltFnNum for AF6 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0110
+        }
+    }
+
+    /// AF7
+    pub struct AF7;
+    impl AltFnNum for AF7 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B0111
+        }
+    }
+
+    /// AF8
+    pub struct AF8;
+    impl AltFnNum for AF8 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1000
+        }
+    }
+
+    /// AF9
+    pub struct AF9;
+    impl AltFnNum for AF9 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1001
+        }
+    }
+
+    /// AF10
+    pub struct AF10;
+    impl AltFnNum for AF10 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1010
+        }
+    }
+
+    /// AF11
+    pub struct AF11;
+    impl AltFnNum for AF11 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1011
+        }
+    }
+
+    /// AF12
+    pub struct AF12;
+    impl AltFnNum for AF12 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1100
+        }
+    }
+
+    /// AF13
+    pub struct AF13;
+    impl AltFnNum for AF13 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1101
+        }
+    }
+
+    /// AF14
+    pub struct AF14;
+    impl AltFnNum for AF14 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1110
+        }
+    }
+
+    /// AF15
+    pub struct AF15;
+    impl AltFnNum for AF15 {
+        fn alt_fn_num(&self) -> U4 {
+            U4::B1111
+        }
+    }
+
+    /// Extension trait to split a GPIO peripheral in independent pins and registers
+    pub trait GpioExt {
+        /// The to split the GPIO into
+        type Ports;
+
+        /// Splits the GPIO block into independent pins and registers
+        fn split(self, ahb: &mut AHB) -> Self::Ports;
+    }
+
+    macro_rules! gpio {
+        ($GPIOX:ident, $gpiox:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
+            $($PXi:ident: ($pxi:ident, $i:expr, $AFR:expr),)+
+        ]) => {
+            /// GPIO
+            pub mod $gpiox {
+                use core::marker::PhantomData;
+                // use hal::digital::OutputPin;
+                use stm32f30x::$GPIOX;
+
+                use rcc::AHB;
+                use super::*;
+
+                /// GPIO parts
+                pub struct Ports {
+                    $(
+                        /// Pin $PXi
+                        pub $pxi: $PXi<PullNone, Input>,
+                    )+
+                }
+
+                impl GpioExt for $GPIOX {
+                    type Ports = Ports;
+
+                    fn split(self, ahb: &mut AHB) -> Ports {
+                        ahb.enr().modify(|_, w| w.$iopxenr().enabled());
+                        ahb.rstr().modify(|_, w| w.$iopxrst().set_bit());
+                        ahb.rstr().modify(|_, w| w.$iopxrst().clear_bit());
+
+                        Ports {
+                            $(
+                                $pxi: $PXi {
+                                    _pullup_state: PhantomData,
+                                    _pin_mode: PhantomData
+                                },
+                            )+
+                        }
+                    }
+                }
+
+                $(
+                    /// Pin
+                    pub struct $PXi<PT: PullType, PM: PinMode> {
+                        _pullup_state: PhantomData<PT>,
+                        _pin_mode: PhantomData<PM>
+                    }
+
+                    impl<PT: PullType, PM: PinMode> $PXi<PT, PM> {
+                        /// Sets pull type: Floaing, PullUp, PullDown
+                        pub fn pull_type<NPT: PullType>(self, pt: NPT)
+                                                        -> $PXi<NPT, PM>
+                        {
+                            let offset = 2 * $i;
+                            let pupdr = unsafe { &(*$GPIOX::ptr()).pupdr };
+                            let pd_bits:u32 = pt.pull_type().into();
+                            pupdr.modify(|r, w| unsafe {
+                                w.bits(r.bits() & !(pd_bits << offset))
+                            });
+
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+
+                        // XXX: it maybe makes sense to disallow this
+                        //      when Pin is input already;
+                        //      need to think about that
+                        /// Sets io_mode to input
+                        pub fn input(self) -> $PXi<PT, Input> {
+                            let offset = 2 * $i;
+                            let io_bits:u32 = Input.pin_mode().into();
+                            let moder = unsafe { &(*$GPIOX::ptr()).moder };
+                            moder.modify(|r, w| unsafe {
+                                w.bits(r.bits() & !(io_bits << offset))
+                            });
+
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+
+                        /// Sets io_mode to analog
+                        pub fn analog(self) -> $PXi<PT, Input> {
+                            let offset = 2 * $i;
+                            let io_bits:u32 = Analog.pin_mode().into();
+                            let moder = unsafe { &(*$GPIOX::ptr()).moder };
+                            moder.modify(|r, w| unsafe {
+                                w.bits(r.bits() & !(io_bits << offset))
+                            });
+
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+                    }
+                )+
+
+            }
+        }
+    }
+
+    gpio!(GPIOA, gpioa, iopaen, ioparst, PAx, [
+        PA0: (pa0, 0, AltFnRegister::Low),
+        PA1: (pa1, 1, AltFnRegister::Low),
+        PA2: (pa2, 2, AltFnRegister::Low),
+        PA3: (pa3, 3, AltFnRegister::Low),
+        PA4: (pa4, 4, AltFnRegister::Low),
+        PA5: (pa5, 5, AltFnRegister::Low),
+        PA6: (pa6, 6, AltFnRegister::Low),
+        PA7: (pa7, 7, AltFnRegister::Low),
+        PA8: (pa8, 8, AltFnRegister::High),
+        PA9: (pa9, 9, AltFnRegister::High),
+        PA10: (pa10, 10, AltFnRegister::High),
+        PA11: (pa11, 11, AltFnRegister::High),
+        PA12: (pa12, 12, AltFnRegister::High),
+        PA13: (pa13, 13, AltFnRegister::High),
+        PA14: (pa14, 14, AltFnRegister::High),
+        PA15: (pa15, 15, AltFnRegister::High),
+    ]);
+}
+
 /// Extension trait to split a GPIO peripheral in independent pins and registers
 pub trait GpioExt {
     /// The to split the GPIO into
