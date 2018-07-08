@@ -156,14 +156,6 @@ pub mod wip {
         }
     }
 
-    /// Alt Fn Register (low or high)
-    pub enum AltFnRegister {
-        /// Low
-        Low = 0x20,
-        /// High
-        High = 0x24,
-    }
-
     /// AltFn number
     pub trait AltFnNum {
         /// converts type state
@@ -309,7 +301,7 @@ pub mod wip {
 
     macro_rules! gpio {
         ($GPIOX:ident, $gpiox:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
-            $($PXi:ident: ($pxi:ident, $i:expr, $AFR:expr),)+
+            $($PXi:ident: ($pxi:ident, $i:expr, $AFR:ident),)+
         ]) => {
             /// GPIO
             pub mod $gpiox {
@@ -356,6 +348,25 @@ pub mod wip {
                         w.bits((r.bits()
                                 & !(0b11 << offset))
                                | (mode_bits << offset))
+                    });
+                }
+
+                fn set_output_speed<OS: OutputSpeed>(index: u32, os: OS) {
+                    let offset = 2 * index;
+                    let ospeedr = unsafe { &(*$GPIOX::ptr()).ospeedr };
+                    let speed_bits:u32 = os.output_speed().into();
+                    ospeedr.modify(|r, w| unsafe {
+                        w.bits((r.bits()
+                                & !(0b11 << offset))
+                               | (speed_bits << offset))
+                    });
+                }
+
+                fn set_output_type<OT: OutputType>(index: u32, ot: OT) {
+                    let otyper = unsafe { &(*$GPIOX::ptr()).otyper };
+                    let type_bits:u32 = ot.output_type().into();
+                    otyper.modify(|r, w| unsafe {
+                        w.bits(r.bits() | (type_bits << index))
                     });
                 }
 
@@ -418,16 +429,27 @@ pub mod wip {
                             set_pin_mode::<Output<PushPull, LowSpeed>>($i);
                             result2
                         }
+
+                        /// Set io_mode to altfn and set alternating function
+                        pub fn alternating<AFN: AltFnNum>(self, af: AFN) -> $PXi<PT, AltFn<AFN, PushPull, LowSpeed>> {
+                            let result: $PXi<PT, AltFn<AFN, PushPull, LowSpeed>> = $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            };
+                            // ensure output type, speed, and afnum are set
+                            let result2 = result
+                                .alt_fn(af)
+                                .output_type(PushPull)
+                                .output_speed(LowSpeed);
+                            set_pin_mode::<AltFn<AFN, PushPull, LowSpeed>>($i);
+                            result2
+                        }
                     }
 
                     impl<PT: PullType, OT: OutputType, OS: OutputSpeed> $PXi<PT, Output<OT, OS>> {
                         /// Set output type
                         pub fn output_type<NOT: OutputType>(self, ot: NOT) -> $PXi<PT, Output<NOT, OS>> {
-                            let otyper = unsafe { &(*$GPIOX::ptr()).otyper };
-                            let type_bits:u32 = ot.output_type().into();
-                            otyper.modify(|r, w| unsafe {
-                                w.bits(r.bits() | (type_bits << $i))
-                            });
+                            set_output_type($i, ot);
                             $PXi {
                                 _pullup_state: PhantomData,
                                 _pin_mode: PhantomData
@@ -436,13 +458,40 @@ pub mod wip {
 
                         /// Set output speed
                         pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, Output<OT, NOS>> {
+                            set_output_speed($i, os);
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+                    }
+
+                    impl<PT: PullType, AFN: AltFnNum, OT: OutputType, OS: OutputSpeed> $PXi<PT, AltFn<AFN, OT, OS>> {
+                        /// Set output type
+                        pub fn output_type<NOT: OutputType>(self, ot: NOT) -> $PXi<PT, AltFn<AFN, NOT, OS>> {
+                            set_output_type($i, ot);
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+
+                        /// Set output speed
+                        pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, AltFn<AFN, OT, NOS>> {
+                            set_output_speed($i, os);
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+
+                        /// Set altfn
+                        pub fn alt_fn<NAFN: AltFnNum>(self, af: NAFN) -> $PXi<PT, AltFn<NAFN, OT, OS>> {
                             let offset = 2 * $i;
-                            let ospeedr = unsafe { &(*$GPIOX::ptr()).ospeedr };
-                            let speed_bits:u32 = os.output_speed().into();
-                            ospeedr.modify(|r, w| unsafe {
-                                w.bits((r.bits()
-                                        & !(0b11 << offset))
-                                       | (speed_bits << offset))
+                            let af_bits: u32 = af.alt_fn_num().into();
+                            let afr = unsafe { &(*$GPIOX::ptr()).$AFR };
+                            afr.modify(|r, w| unsafe {
+                                w.bits((r.bits() & !(0b1111 << offset)) | (af_bits << offset))
                             });
 
                             $PXi {
@@ -450,7 +499,6 @@ pub mod wip {
                                 _pin_mode: PhantomData
                             }
                         }
-
                     }
 
                 )+
@@ -460,22 +508,22 @@ pub mod wip {
     }
 
     gpio!(GPIOA, gpioa, iopaen, ioparst, PAx, [
-        PA0: (pa0, 0, AltFnRegister::Low),
-        PA1: (pa1, 1, AltFnRegister::Low),
-        PA2: (pa2, 2, AltFnRegister::Low),
-        PA3: (pa3, 3, AltFnRegister::Low),
-        PA4: (pa4, 4, AltFnRegister::Low),
-        PA5: (pa5, 5, AltFnRegister::Low),
-        PA6: (pa6, 6, AltFnRegister::Low),
-        PA7: (pa7, 7, AltFnRegister::Low),
-        PA8: (pa8, 8, AltFnRegister::High),
-        PA9: (pa9, 9, AltFnRegister::High),
-        PA10: (pa10, 10, AltFnRegister::High),
-        PA11: (pa11, 11, AltFnRegister::High),
-        PA12: (pa12, 12, AltFnRegister::High),
-        PA13: (pa13, 13, AltFnRegister::High),
-        PA14: (pa14, 14, AltFnRegister::High),
-        PA15: (pa15, 15, AltFnRegister::High),
+        PA0: (pa0, 0, afrl),
+        PA1: (pa1, 1, afrl),
+        PA2: (pa2, 2, afrl),
+        PA3: (pa3, 3, afrl),
+        PA4: (pa4, 4, afrl),
+        PA5: (pa5, 5, afrl),
+        PA6: (pa6, 6, afrl),
+        PA7: (pa7, 7, afrl),
+        PA8: (pa8, 8, afrh),
+        PA9: (pa9, 9, afrh),
+        PA10: (pa10, 10, afrh),
+        PA11: (pa11, 11, afrh),
+        PA12: (pa12, 12, afrh),
+        PA13: (pa13, 13, afrh),
+        PA14: (pa14, 14, afrh),
+        PA15: (pa15, 15, afrh),
     ]);
 }
 
