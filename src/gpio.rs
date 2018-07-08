@@ -7,22 +7,22 @@ use core::marker::PhantomData;
 
 use rcc::AHB;
 
-/// Supa mod
-pub mod supa {
+/// WIP mod; changing the way we use GPIOs to a better one!
+pub mod wip {
     use bobbin_bits::*;
     use core::marker::PhantomData;
     use rcc::AHB;
     /// Trait for pin mode
     pub trait PinMode {
         /// Convert type state into actual bits
-        fn pin_mode(&self) -> U2;
+        fn pin_mode() -> U2;
     }
 
     /// Input
     pub struct Input;
     impl PinMode for Input {
         /// bits
-        fn pin_mode(&self) -> U2 {
+        fn pin_mode() -> U2 {
             U2::B00
         }
     }
@@ -33,7 +33,7 @@ pub mod supa {
         _output_speed: PhantomData<OS>,
     }
     impl<OT: OutputType, OS: OutputSpeed> PinMode for Output<OT, OS> {
-        fn pin_mode(&self) -> U2 {
+        fn pin_mode() -> U2 {
             U2::B01
         }
     }
@@ -45,7 +45,7 @@ pub mod supa {
         _output_speed: PhantomData<OS>,
     }
     impl<AN: AltFnNum, OT: OutputType, OS: OutputSpeed> PinMode for AltFn<AN, OT, OS> {
-        fn pin_mode(&self) -> U2 {
+        fn pin_mode() -> U2 {
             U2::B10
         }
     }
@@ -53,7 +53,7 @@ pub mod supa {
     /// Analog
     pub struct Analog;
     impl PinMode for Analog {
-        fn pin_mode(&self) -> U2 {
+        fn pin_mode() -> U2 {
             U2::B11
         }
     }
@@ -347,6 +347,18 @@ pub mod supa {
                     }
                 }
 
+                fn set_pin_mode<PM: PinMode>(index: u32) {
+                    let offset = 2 * index;
+                    let mode_bits:u32 = PM::pin_mode().into();
+                    let moder = unsafe { &(*$GPIOX::ptr()).moder };
+                    // set io mode
+                    moder.modify(|r, w| unsafe {
+                        w.bits((r.bits()
+                                & !(0b11 << offset))
+                               | (mode_bits << offset))
+                    });
+                }
+
                 $(
                     /// Pin
                     pub struct $PXi<PT: PullType, PM: PinMode> {
@@ -377,13 +389,7 @@ pub mod supa {
                         //      need to think about that
                         /// Sets io_mode to input
                         pub fn input(self) -> $PXi<PT, Input> {
-                            let offset = 2 * $i;
-                            let io_bits:u32 = Input.pin_mode().into();
-                            let moder = unsafe { &(*$GPIOX::ptr()).moder };
-                            moder.modify(|r, w| unsafe {
-                                w.bits(r.bits() & !(io_bits << offset))
-                            });
-
+                            set_pin_mode::<Input>($i);
                             $PXi {
                                 _pullup_state: PhantomData,
                                 _pin_mode: PhantomData
@@ -391,12 +397,52 @@ pub mod supa {
                         }
 
                         /// Sets io_mode to analog
-                        pub fn analog(self) -> $PXi<PT, Input> {
+                        pub fn analog(self) -> $PXi<PT, Analog> {
+                            set_pin_mode::<Analog>($i);
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+
+                        /// Set io_mode to output
+                        pub fn output(self) -> $PXi<PT, Output<PushPull, LowSpeed>> {
+                            let result: $PXi<PT, Output<PushPull, LowSpeed>> = $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            };
+                            // ensure output type and speed are set
+                            let result2 = result
+                                .output_type(PushPull)
+                                .output_speed(LowSpeed);
+                            set_pin_mode::<Output<PushPull, LowSpeed>>($i);
+                            result2
+                        }
+                    }
+
+                    impl<PT: PullType, OT: OutputType, OS: OutputSpeed> $PXi<PT, Output<OT, OS>> {
+                        /// Set output type
+                        pub fn output_type<NOT: OutputType>(self, ot: NOT) -> $PXi<PT, Output<NOT, OS>> {
+                            let otyper = unsafe { &(*$GPIOX::ptr()).otyper };
+                            let type_bits:u32 = ot.output_type().into();
+                            otyper.modify(|r, w| unsafe {
+                                w.bits(r.bits() | (type_bits << $i))
+                            });
+                            $PXi {
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+
+                        /// Set output speed
+                        pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, Output<OT, NOS>> {
                             let offset = 2 * $i;
-                            let io_bits:u32 = Analog.pin_mode().into();
-                            let moder = unsafe { &(*$GPIOX::ptr()).moder };
-                            moder.modify(|r, w| unsafe {
-                                w.bits(r.bits() & !(io_bits << offset))
+                            let ospeedr = unsafe { &(*$GPIOX::ptr()).ospeedr };
+                            let speed_bits:u32 = os.output_speed().into();
+                            ospeedr.modify(|r, w| unsafe {
+                                w.bits((r.bits()
+                                        & !(0b11 << offset))
+                                       | (speed_bits << offset))
                             });
 
                             $PXi {
@@ -404,7 +450,9 @@ pub mod supa {
                                 _pin_mode: PhantomData
                             }
                         }
+
                     }
+
                 )+
 
             }
