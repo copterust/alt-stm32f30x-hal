@@ -487,11 +487,13 @@ pub mod wip {
 
                         /// Set altfn
                         pub fn alt_fn<NAFN: AltFnNum>(self, af: NAFN) -> $PXi<PT, AltFn<NAFN, OT, OS>> {
-                            let offset = 2 * $i;
+                            let index = $i & (8 - 1);
+                            let shift: usize = 0 + (index << 2);
                             let af_bits: u32 = af.alt_fn_num().into();
                             let afr = unsafe { &(*$GPIOX::ptr()).$AFR };
                             afr.modify(|r, w| unsafe {
-                                w.bits((r.bits() & !(0b1111 << offset)) | (af_bits << offset))
+                                w.bits((r.bits() & !(0b1111 << shift))
+                                       | (af_bits << shift))
                             });
 
                             $PXi {
