@@ -382,11 +382,12 @@ pub mod wip {
                         pub fn pull_type<NPT: PullType>(self, pt: NPT)
                                                         -> $PXi<NPT, PM>
                         {
-                            let offset = 2 * $i;
+                            let shift = 0 + ($i << 1);
                             let pupdr = unsafe { &(*$GPIOX::ptr()).pupdr };
                             let pd_bits:u32 = pt.pull_type().into();
                             pupdr.modify(|r, w| unsafe {
-                                w.bits(r.bits() & !(pd_bits << offset))
+                                w.bits((r.bits() & !(0b11 << shift))
+                                       | (pd_bits << shift))
                             });
 
                             $PXi {
