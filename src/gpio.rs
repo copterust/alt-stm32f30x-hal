@@ -306,7 +306,7 @@ pub mod wip {
             /// GPIO
             pub mod $gpiox {
                 use core::marker::PhantomData;
-                // use hal::digital::OutputPin;
+                use hal::digital::{OutputPin, InputPin};
                 use stm32f30x::$GPIOX;
 
                 use rcc::AHB;
@@ -370,6 +370,37 @@ pub mod wip {
                     });
                 }
 
+                /// Partially erased pin
+                pub struct $PXx<PT: PullType, PM: PinMode> {
+                    i: u8,
+                    _pullup_state: PhantomData<PT>,
+                    _pin_mode: PhantomData<PM>
+                }
+
+                impl<PT: PullType, OT: OutputType, OS: OutputSpeed> OutputPin
+                    for $PXx<PT, Output<OT, OS>> {
+                    fn set_high(&mut self) {
+                        // NOTE(unsafe) atomic write to a stateless register
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
+                    }
+
+                    fn set_low(&mut self) {
+                        // NOTE(unsafe) atomic write to a stateless register
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + self.i))) }
+                    }
+                }
+
+                impl<PT: PullType> InputPin for $PXx<PT, Input> {
+                    fn is_high(&self) -> bool {
+                        !self.is_low()
+                    }
+
+                    fn is_low(&self) -> bool {
+                        // NOTE(unsafe) atomic read with no side effects
+                        unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << self.i) == 0 }
+                    }
+                }
+
                 $(
                     /// Pin
                     pub struct $PXi<PT: PullType, PM: PinMode> {
@@ -378,6 +409,18 @@ pub mod wip {
                     }
 
                     impl<PT: PullType, PM: PinMode> $PXi<PT, PM> {
+                        /// Erases the pin number from the type
+                        ///
+                        /// This is useful when you want to collect the pins into an array where you
+                        /// need all the elements to have the same type
+                        pub fn downgrade(self) -> $PXx<PT, PM> {
+                            $PXx {
+                                i: $i,
+                                _pullup_state: PhantomData,
+                                _pin_mode: PhantomData
+                            }
+                        }
+
                         /// Sets pull type: Floaing, PullUp, PullDown
                         pub fn pull_type<NPT: PullType>(self, pt: NPT)
                                                         -> $PXi<NPT, PM>
