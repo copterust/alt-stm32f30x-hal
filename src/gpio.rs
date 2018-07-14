@@ -306,7 +306,7 @@ pub mod wip {
             /// GPIO
             pub mod $gpiox {
                 use core::marker::PhantomData;
-                use hal::digital::{OutputPin, InputPin};
+                use hal::digital::{InputPin, OutputPin, StatefulOutputPin, toggleable};
                 use stm32f30x::$GPIOX;
 
                 use rcc::AHB;
@@ -544,6 +544,46 @@ pub mod wip {
                                 _pullup_state: PhantomData,
                                 _pin_mode: PhantomData
                             }
+                        }
+                    }
+
+
+                    impl<PT: PullType, OT:OutputType, OS:OutputSpeed> OutputPin
+                        for $PXi<PT, Output<OT, OS>> {
+                        fn set_high(&mut self) {
+                            // NOTE(unsafe) atomic write to a stateless register
+                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
+                        }
+
+                        fn set_low(&mut self) {
+                            // NOTE(unsafe) atomic write to a stateless register
+                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
+                        }
+                    }
+
+                    impl<PT: PullType, OT:OutputType, OS:OutputSpeed> StatefulOutputPin
+                        for $PXi<PT, Output<OT, OS>> {
+                        fn is_set_high(&self) -> bool {
+                            !self.is_set_low()
+                        }
+
+                        fn is_set_low(&self) -> bool {
+                            // NOTE(unsafe) atomic read with no side effects
+                            unsafe { (*$GPIOX::ptr()).odr.read().bits() & (1 << $i) == 0 }
+                        }
+                    }
+
+                    impl<PT: PullType, OT:OutputType, OS:OutputSpeed> toggleable::Default
+                        for $PXi<PT, Output<OT, OS>> {}
+
+                    impl<PT: PullType> InputPin for $PXi<PT, Input> {
+                        fn is_high(&self) -> bool {
+                            !self.is_low()
+                        }
+
+                        fn is_low(&self) -> bool {
+                            // NOTE(unsafe) atomic read with no side effects
+                            unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << $i) == 0 }
                         }
                     }
 
