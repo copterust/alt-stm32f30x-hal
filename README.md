@@ -15,6 +15,10 @@ Available via [crates.io](https://crates.io/crates/alt-stm32f30x-hal):
 version = "0.3.0"
 ```
 
+## Documentation
+
+Available via [docs.rs](https://docs.rs/alt-stm32f30x-hal/0.3.0/alt_stm32f30x_hal/)
+
 ## License
 
 Licensed under either of
