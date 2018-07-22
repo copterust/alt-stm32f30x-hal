@@ -1,12 +1,12 @@
 [package]
-authors = ["Jorge Aparicio <jorge@japaric.io>"]
+authors = ["Roma Sokolov", "Alexander Zhuravlev", "Jorge Aparicio <jorge@japaric.io>"]
 categories = ["embedded", "hardware-support", "no-std"]
-description = "HAL for the STM32F30x family of microcontrollers"
+description = "Alternative HAL impl for the STM32F30x family of microcontrollers"
 keywords = ["arm", "cortex-m", "stm32", "hal"]
 license = "MIT OR Apache-2.0"
-name = "stm32f30x-hal"
-repository = "https://github.com/japaric/stm32f30x-hal"
-version = "0.2.0"
+name = "alt-stm32f30x-hal"
+repository = "https://github.com/copterust/alt-stm32f30x-hal"
+version = "0.3.0"
 
 [dependencies]
 cortex-m = "0.5.0"
