@@ -8,7 +8,7 @@
 
 ## Using
 
-Available via [crates.io](https://crates.io/crates/alt-stm32f30x-hal):
+Library is available via [crates.io](https://crates.io/crates/alt-stm32f30x-hal):
 
 ```
 [dependencies.alt-stm32f30x-hal]
