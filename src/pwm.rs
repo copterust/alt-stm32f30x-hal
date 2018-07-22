@@ -1,52 +1,27 @@
 //! Pwm
 
+use core::marker::PhantomData;
 use gpio;
 use hal;
 use timer;
 
-// use core::marker::PhantomData;
-// use core::mem;
-
-// use cast::u16;
-
-// use stm32f30x::{TIM2, TIM3, TIM4};
-
-// use bb;
-// use gpio::gpioa::{PA0, PA1, PA2, PA3};
-// use gpio::gpiob::{PB0, PB1, PB6, PB7, PB8, PB9};
-// use gpio::gpioc::{PC6, PC7, PC8, PC9};
-// use gpio::{AF1, AF2};
-// use rcc::{APB1, Clocks};
-// use time::Hertz;
-
-// /// Pins
-// pub trait Pins<TIM> {
-//     /// C1
-//     const C1: bool;
-//     /// C2
-//     const C2: bool;
-//     /// C3
-//     const C3: bool;
-//     /// C4
-//     const C4: bool;
-//     /// channels
-//     type Channels;
-// }
-
 /// pwm
-pub struct PwmBinding<P: gpio::GPIOPin, C: timer::TimerChannel> {
+pub struct PwmBinding<P: gpio::GPIOPin, C: timer::TimerChannel, AF: gpio::AltFnNum> {
     pin: P,
     channel: C,
+    _af: PhantomData<AF>,
 }
 
-impl<P: gpio::GPIOPin, C: timer::TimerChannel> PwmBinding<P, C> {
+impl<P: gpio::GPIOPin, C: timer::TimerChannel, AF: gpio::AltFnNum> PwmBinding<P, C, AF> {
     /// opun
     pub fn release(self) -> (P, C) {
         (self.pin, self.channel)
     }
 }
 
-impl<P: gpio::GPIOPin, C: timer::TimerChannel> hal::PwmPin for PwmBinding<P, C> {
+impl<P: gpio::GPIOPin, C: timer::TimerChannel, AF: gpio::AltFnNum> hal::PwmPin
+    for PwmBinding<P, C, AF>
+{
     type Duty = u32;
     fn disable(&mut self) {
         self.channel.disable()
@@ -69,12 +44,61 @@ impl<P: gpio::GPIOPin, C: timer::TimerChannel> hal::PwmPin for PwmBinding<P, C> 
     }
 }
 
+/// PwmExtension trait
+pub trait PwmExt {
+    /// type of pin
+    type P: gpio::GPIOPin;
+    /// type of channel
+    type C: timer::TimerChannel;
+    /// type for AF
+    type AF: gpio::AltFnNum;
+    /// binding
+    type Output;
+    /// Configures pin and channel to create pwm binding
+    fn new(pin: Self::P, channel: Self::C) -> Self::Output;
+}
+
 macro_rules! pwm {
     (
         $CRFN:ident,($PINMOD:ident, $PIN:ident),($TIM:ident, $CHN:ident, $CHPE:expr),($AF:ident, $PP:ident, $SPEED:ident)
     ) => {
+        impl<PT: gpio::PullType, PM: gpio::PinMode, CM: timer::ChMode> PwmExt
+            for PwmBinding<
+                gpio::$PINMOD::$PIN<PT, PM>,
+                timer::$TIM::Channel<timer::$CHN, CM>,
+                gpio::$AF,
+            >
+        {
+            type P = gpio::$PINMOD::$PIN<PT, PM>;
+            type C = timer::$TIM::Channel<timer::$CHN, CM>;
+            type AF = gpio::$AF;
+            type Output = PwmBinding<
+                gpio::$PINMOD::$PIN<PT, gpio::AltFn<gpio::$AF, gpio::$PP, gpio::$SPEED>>,
+                timer::$TIM::Channel<timer::$CHN, timer::Pwm1>,
+                gpio::$AF,
+            >;
+            fn new(pin: Self::P, channel: Self::C) -> Self::Output {
+                let pin = pin
+                    .alternating(gpio::$AF)
+                    .output_speed(gpio::$SPEED)
+                    .output_type(gpio::$PP)
+                    .alt_fn(gpio::$AF);
+                let mut channel = channel.mode(timer::Pwm1);
+                channel.preload($CHPE);
+                PwmBinding {
+                    pin,
+                    channel,
+                    _af: PhantomData,
+                }
+            }
+        }
+
         impl<PT: gpio::PullType, PM: gpio::PinMode, CM: timer::ChMode>
-            PwmBinding<gpio::$PINMOD::$PIN<PT, PM>, timer::$TIM::Channel<timer::$CHN, CM>>
+            PwmBinding<
+                gpio::$PINMOD::$PIN<PT, PM>,
+                timer::$TIM::Channel<timer::$CHN, CM>,
+                gpio::$AF,
+            >
         {
             /// Binds pin to channel to init pwm
             pub fn $CRFN(
@@ -83,16 +107,20 @@ macro_rules! pwm {
             ) -> PwmBinding<
                 gpio::$PINMOD::$PIN<PT, gpio::AltFn<gpio::$AF, gpio::$PP, gpio::$SPEED>>,
                 timer::$TIM::Channel<timer::$CHN, timer::Pwm1>,
+                gpio::$AF,
             > {
                 let pin = pin
                     .alternating(gpio::$AF)
                     .output_speed(gpio::$SPEED)
                     .output_type(gpio::$PP)
                     .alt_fn(gpio::$AF);
-                // configure channel
                 let mut channel = channel.mode(timer::Pwm1);
                 channel.preload($CHPE);
-                PwmBinding { pin, channel }
+                PwmBinding {
+                    pin,
+                    channel,
+                    _af: PhantomData,
+                }
             }
         }
     };
