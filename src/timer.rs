@@ -436,7 +436,7 @@ macro_rules! tim {
             }
 
             impl<C1: ChState, C2: ChState, C3: ChState, C4: ChState> Timer<C1, C2, C3, C4> {
-                /// Reset frequency/timer (doesn't start)
+                /// Stop timer and reset frequency (doesn't start/enable)
                 pub fn reset<T>(&mut self, timeout: T)
                 where
                     T: Into<Hertz>,
@@ -474,6 +474,12 @@ macro_rules! tim {
                         }
                     }
                 }
+
+                /// Enable timer
+                pub fn enable(&mut self) {
+                    // enable counter
+                    self.tim.cr1.modify(|_, w| w.cen().set_bit());
+                }
             }
 
             impl<C1: ChState, C2: ChState, C3: ChState, C4: ChState> Periodic
@@ -490,9 +496,7 @@ macro_rules! tim {
                     T: Into<Hertz>,
                 {
                     self.reset(timeout);
-
-                    // start counter
-                    self.tim.cr1.modify(|_, w| w.cen().set_bit());
+                    self.enable();
                 }
 
                 fn wait(&mut self) -> nb::Result<(), Void> {
