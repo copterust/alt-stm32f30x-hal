@@ -8,12 +8,12 @@ use nb;
 use stm32f30x::{USART1, USART2, USART3};
 use void::Void;
 
-use gpio::gpioa::{PA10, PA2, PA3, PA9};
-use gpio::gpiob::{PB10, PB11, PB6, PB7};
+use gpio::gpioa::{PA10, PA14, PA15, PA2, PA3, PA9};
+use gpio::gpiob::{PB10, PB11, PB3, PB4, PB6, PB7};
 use gpio::gpioc::{PC10, PC11, PC4, PC5};
 use gpio::gpiod::{PD5, PD6, PD8, PD9};
 use gpio::gpioe::{PE0, PE1, PE15};
-use gpio::AF7;
+use gpio::{AF7, AltFn, OutputSpeed, OutputType, PullType};
 use rcc::{APB1, APB2, Clocks};
 use time::Bps;
 
@@ -47,34 +47,86 @@ pub unsafe trait TxPin<USART> {}
 /// RX pin - DO NOT IMPLEMENT THIS TRAIT
 pub unsafe trait RxPin<USART> {}
 
-unsafe impl TxPin<USART1> for PA9<AF7> {}
-unsafe impl TxPin<USART1> for PB6<AF7> {}
-unsafe impl TxPin<USART1> for PC4<AF7> {}
-unsafe impl TxPin<USART1> for PE0<AF7> {}
+// Tx USART1
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART1>
+    for PA9<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART1>
+    for PB6<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART1>
+    for PC4<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART1>
+    for PE0<PT, AltFn<AF7, OT, OS>>
+{}
 
-unsafe impl RxPin<USART1> for PA10<AF7> {}
-unsafe impl RxPin<USART1> for PB7<AF7> {}
-unsafe impl RxPin<USART1> for PC5<AF7> {}
-unsafe impl RxPin<USART1> for PE1<AF7> {}
+// Rx USART1
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART1>
+    for PA10<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART1>
+    for PB7<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART1>
+    for PC5<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART1>
+    for PE1<PT, AltFn<AF7, OT, OS>>
+{}
 
-unsafe impl TxPin<USART2> for PA2<AF7> {}
-// unsafe impl TxPin<USART2> for PA14<AF7> {}
-// unsafe impl TxPin<USART2> for PB3<AF7> {}
-unsafe impl TxPin<USART2> for PD5<AF7> {}
+// Tx USART2
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART2>
+    for PA2<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART2>
+    for PA14<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART2>
+    for PB3<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART2>
+    for PD5<PT, AltFn<AF7, OT, OS>>
+{}
 
-unsafe impl RxPin<USART2> for PA3<AF7> {}
-// unsafe impl RxPin<USART2> for PA15<AF7> {}
-// unsafe impl RxPin<USART2> for PB4<AF7> {}
-unsafe impl RxPin<USART2> for PD6<AF7> {}
+// Rx USART2
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART2>
+    for PA3<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART2>
+    for PA15<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART2>
+    for PB4<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART2>
+    for PD6<PT, AltFn<AF7, OT, OS>>
+{}
 
-unsafe impl TxPin<USART3> for PB10<AF7> {}
-unsafe impl TxPin<USART3> for PC10<AF7> {}
-unsafe impl TxPin<USART3> for PD8<AF7> {}
+// Tx USART3
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART3>
+    for PB10<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART3>
+    for PC10<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> TxPin<USART3>
+    for PD8<PT, AltFn<AF7, OT, OS>>
+{}
 
-unsafe impl RxPin<USART3> for PB11<AF7> {}
-unsafe impl RxPin<USART3> for PC11<AF7> {}
-unsafe impl RxPin<USART3> for PD9<AF7> {}
-unsafe impl RxPin<USART3> for PE15<AF7> {}
+// Rx USART3
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART3>
+    for PB11<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART3>
+    for PC11<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART3>
+    for PD9<PT, AltFn<AF7, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> RxPin<USART3>
+    for PE15<PT, AltFn<AF7, OT, OS>>
+{}
 
 /// Serial abstraction
 pub struct Serial<USART, PINS> {

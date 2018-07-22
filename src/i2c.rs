@@ -6,7 +6,7 @@ use stm32f30x::{I2C1, I2C2};
 use gpio::gpioa::{PA10, PA9};
 use gpio::gpiob::{PB6, PB7, PB8, PB9};
 use gpio::gpiof::{PF0, PF1, PF6};
-use gpio::AF4;
+use gpio::{AF4, AltFn, OutputSpeed, OutputType, PullType};
 use hal::blocking::i2c::{Write, WriteRead};
 use rcc::{APB1, Clocks};
 use time::Hertz;
@@ -34,19 +34,42 @@ pub unsafe trait SclPin<I2C> {}
 pub unsafe trait SdaPin<I2C> {}
 
 // unsafe impl SclPin<I2C1> for PA15<AF4> {}
-unsafe impl SclPin<I2C1> for PB6<AF4> {}
-unsafe impl SclPin<I2C1> for PB8<AF4> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PB6<PT, AltFn<AF4, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PB8<PT, AltFn<AF4, OT, OS>>
+{}
 
-unsafe impl SclPin<I2C2> for PA9<AF4> {}
-unsafe impl SclPin<I2C2> for PF1<AF4> {}
-unsafe impl SclPin<I2C2> for PF6<AF4> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PA9<PT, AltFn<AF4, OT, OS>>
+{}
+
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PF1<PT, AltFn<AF4, OT, OS>>
+{}
+
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PF6<PT, AltFn<AF4, OT, OS>>
+{}
 
 // unsafe impl SdaPin<I2C1> for PA14<AF4> {}
-unsafe impl SdaPin<I2C1> for PB7<AF4> {}
-unsafe impl SdaPin<I2C1> for PB9<AF4> {}
 
-unsafe impl SdaPin<I2C2> for PA10<AF4> {}
-unsafe impl SdaPin<I2C2> for PF0<AF4> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PB7<PT, AltFn<AF4, OT, OS>>
+{}
+
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PB9<PT, AltFn<AF4, OT, OS>>
+{}
+
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PA10<PT, AltFn<AF4, OT, OS>>
+{}
+
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+    for PF0<PT, AltFn<AF4, OT, OS>>
+{}
 
 /// I2C peripheral operating in master mode
 pub struct I2c<I2C, PINS> {

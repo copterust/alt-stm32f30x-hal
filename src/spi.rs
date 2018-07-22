@@ -7,9 +7,10 @@ use nb;
 use stm32f30x::{SPI1, SPI2, SPI3};
 
 use gpio::gpioa::{PA5, PA6, PA7};
-use gpio::gpiob::{PB13, PB14, PB15, PB5, PB3, PB4};
+use gpio::gpiob::{PB13, PB14, PB15, PB3, PB4, PB5};
 use gpio::gpioc::{PC10, PC11, PC12};
 use gpio::{AF5, AF6};
+use gpio::{AltFn, OutputSpeed, OutputType, PullType};
 use rcc::{APB1, APB2, Clocks};
 use time::Hertz;
 
@@ -36,29 +37,59 @@ pub unsafe trait MisoPin<SPI> {}
 /// MOSI pin -- DO NOT IMPLEMENT THIS TRAIT
 pub unsafe trait MosiPin<SPI> {}
 
-unsafe impl SckPin<SPI1> for PA5<AF5> {}
-unsafe impl SckPin<SPI1> for PB3<AF5> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SckPin<SPI1>
+    for PA5<PT, AltFn<AF5, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SckPin<SPI1>
+    for PB3<PT, AltFn<AF5, OT, OS>>
+{}
 
-unsafe impl SckPin<SPI2> for PB13<AF5> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SckPin<SPI2>
+    for PB13<PT, AltFn<AF5, OT, OS>>
+{}
 
-unsafe impl SckPin<SPI3> for PB3<AF6> {}
-unsafe impl SckPin<SPI3> for PC10<AF6> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SckPin<SPI3>
+    for PB3<PT, AltFn<AF6, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SckPin<SPI3>
+    for PC10<PT, AltFn<AF6, OT, OS>>
+{}
 
-unsafe impl MisoPin<SPI1> for PA6<AF5> {}
-unsafe impl MisoPin<SPI1> for PB4<AF5> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MisoPin<SPI1>
+    for PA6<PT, AltFn<AF5, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MisoPin<SPI1>
+    for PB4<PT, AltFn<AF5, OT, OS>>
+{}
 
-unsafe impl MisoPin<SPI2> for PB14<AF5> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MisoPin<SPI2>
+    for PB14<PT, AltFn<AF5, OT, OS>>
+{}
 
-unsafe impl MisoPin<SPI3> for PB4<AF6> {}
-unsafe impl MisoPin<SPI3> for PC11<AF6> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MisoPin<SPI3>
+    for PB4<PT, AltFn<AF6, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MisoPin<SPI3>
+    for PC11<PT, AltFn<AF6, OT, OS>>
+{}
 
-unsafe impl MosiPin<SPI1> for PA7<AF5> {}
-unsafe impl MosiPin<SPI1> for PB5<AF5> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MosiPin<SPI1>
+    for PA7<PT, AltFn<AF5, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MosiPin<SPI1>
+    for PB5<PT, AltFn<AF5, OT, OS>>
+{}
 
-unsafe impl MosiPin<SPI2> for PB15<AF5> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MosiPin<SPI2>
+    for PB15<PT, AltFn<AF5, OT, OS>>
+{}
 
-unsafe impl MosiPin<SPI3> for PB5<AF6> {}
-unsafe impl MosiPin<SPI3> for PC12<AF6> {}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MosiPin<SPI3>
+    for PB5<PT, AltFn<AF6, OT, OS>>
+{}
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> MosiPin<SPI3>
+    for PC12<PT, AltFn<AF6, OT, OS>>
+{}
 
 /// SPI peripheral operating in full duplex master mode
 pub struct Spi<SPI, PINS> {
