@@ -21,6 +21,8 @@ Available via [docs.rs](https://docs.rs/alt-stm32f30x-hal/0.3.0/alt_stm32f30x_ha
 
 ## License
 
+Forked from [stm32f30x-hal](http://github.com/japaric/stm32f30x-hal).
+
 Licensed under either of
 
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or
