@@ -1,4 +1,4 @@
-# `stm32f30x-hal`
+# `alt-stm32f30x-hal`
 
 > Alternative HAL for the STM32F30x family of microcontrollers
 
