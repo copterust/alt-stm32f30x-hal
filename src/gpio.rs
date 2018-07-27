@@ -503,6 +503,16 @@ macro_rules! gpio {
                         unsafe { transmute(self) }
                     }
 
+                    /// Set output type to PushPull
+                    pub fn push_pull(self) -> $PXi<PT, Output<PushPull, OS>> {
+                        self.output_type(PushPull)
+                    }
+
+                    /// Set output type to OpenDrain
+                    pub fn open_drain(self) -> $PXi<PT, Output<OpenDrain, OS>> {
+                        self.output_type(OpenDrain)
+                    }
+
                     /// Set output speed
                     pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, Output<OT, NOS>> {
                         set_output_speed($i, os);
