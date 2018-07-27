@@ -538,9 +538,21 @@ macro_rules! gpio {
                     }
                 }
 
-
                 impl<PT: PullType, OT:OutputType, OS:OutputSpeed> OutputPin
                     for $PXi<PT, Output<OT, OS>> {
+                        fn set_high(&mut self) {
+                            // NOTE(unsafe) atomic write to a stateless register
+                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
+                        }
+
+                        fn set_low(&mut self) {
+                            // NOTE(unsafe) atomic write to a stateless register
+                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
+                        }
+                    }
+
+                impl<PT: PullType, AN: AltFnNum, OT:OutputType, OS:OutputSpeed> OutputPin
+                    for $PXi<PT, AltFn<AN, OT, OS>> {
                         fn set_high(&mut self) {
                             // NOTE(unsafe) atomic write to a stateless register
                             unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
