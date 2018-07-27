@@ -379,8 +379,23 @@ macro_rules! gpio {
                 _pin_mode: PhantomData<PM>
             }
 
-            impl<PT: PullType, OT: OutputType, OS: OutputSpeed> OutputPin
-                for $PXx<PT, Output<OT, OS>> {
+            impl<PT: PullType, OT: OutputType, OS: OutputSpeed>
+                OutputPin for $PXx<PT, Output<OT, OS>> {
+                    fn set_high(&mut self) {
+                        // NOTE(unsafe) atomic write to a stateless register
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
+                    }
+
+                    fn set_low(&mut self) {
+                        // NOTE(unsafe) atomic write to a stateless register
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + self.i))) }
+                    }
+                }
+
+            impl<PT: PullType,
+                 AN: AltFnNum,
+                 OT: OutputType,
+                 OS: OutputSpeed> OutputPin for $PXx<PT, AltFn<AN, OT, OS>> {
                     fn set_high(&mut self) {
                         // NOTE(unsafe) atomic write to a stateless register
                         unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
