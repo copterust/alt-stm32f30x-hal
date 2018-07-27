@@ -1,4 +1,3 @@
-
 indent_style = "Visual"
 binop_separator = "Front"
 wrap_comments = true

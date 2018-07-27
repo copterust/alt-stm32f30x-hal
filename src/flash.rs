@@ -4,15 +4,14 @@ use stm32f30x::{flash, FLASH};
 
 /// Extension trait to constrain the FLASH peripheral
 pub trait FlashExt {
-    /// Constrains the FLASH peripheral to play nicely with the other abstractions
+    /// Constrains the FLASH peripheral to play nicely with the other
+    /// abstractions
     fn constrain(self) -> Parts;
 }
 
 impl FlashExt for FLASH {
     fn constrain(self) -> Parts {
-        Parts {
-            acr: ACR { _0: () },
-        }
+        Parts { acr: ACR { _0: () }, }
     }
 }
 

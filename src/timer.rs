@@ -58,15 +58,12 @@ pub mod syst {
     impl Timer {
         /// System timer
         pub fn new<T>(mut syst: SYST, timeout: T, clocks: Clocks) -> Self
-        where
-            T: Into<Hertz>,
+            where T: Into<Hertz>
         {
             syst.set_clock_source(SystClkSource::Core);
-            let mut timer = Timer {
-                tim: syst,
-                clocks,
-                timeout: Hertz(0),
-            };
+            let mut timer = Timer { tim: syst,
+                                    clocks,
+                                    timeout: Hertz(0), };
             timer.reset(timeout);
             timer
         }
@@ -101,8 +98,7 @@ pub mod syst {
         type Time = Hertz;
 
         fn start<T>(&mut self, timeout: T)
-        where
-            T: Into<Self::Time>,
+            where T: Into<Self::Time>
         {
             self.reset(timeout);
             self.tim.enable_counter();

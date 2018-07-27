@@ -249,8 +249,8 @@ hal! {
 //             'l: loop {
 //                 let sr = self.spi.sr.read();
 
-//                 // ignore overruns because we don't care about the incoming data
-//                 // if sr.ovr().bit_is_set() {
+// // ignore overruns because we don't care about the incoming
+// data                 // if sr.ovr().bit_is_set() {
 //                 // Err(nb::Error::Other(Error::Overrun))
 //                 // } else
 //                 if sr.modf().bit_is_set() {
@@ -259,8 +259,8 @@ hal! {
 //                     return Err(Error::Crc);
 //                 } else if sr.txe().bit_is_set() {
 //                     // NOTE(write_volatile) see note above
-//                     unsafe { ptr::write_volatile(&self.spi.dr as *const _ as *mut u8, *byte) }
-//                     break 'l;
+// unsafe { ptr::write_volatile(&self.spi.dr as *const _ as
+// *mut u8, *byte) }                     break 'l;
 //                 } else {
 //                     // try again
 //                 }

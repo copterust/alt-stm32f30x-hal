@@ -1,7 +1,8 @@
 //! General Purpose Input / Output
 
-// TODO the pins here currently correspond to the LQFP-100 package. There should be Cargo features
-// that let you select different microcontroller packages
+// TODO the pins here currently correspond to the LQFP-100 package. There
+// should be Cargo features that let you select different microcontroller
+// packages
 
 use bobbin_bits::*;
 use core::intrinsics::transmute;
@@ -43,7 +44,9 @@ pub struct AltFn<AN: AltFnNum, OT: OutputType, OS: OutputSpeed> {
     _output_mode: PhantomData<OT>,
     _output_speed: PhantomData<OS>,
 }
-impl<AN: AltFnNum, OT: OutputType, OS: OutputSpeed> PinMode for AltFn<AN, OT, OS> {
+impl<AN: AltFnNum, OT: OutputType, OS: OutputSpeed> PinMode
+    for AltFn<AN, OT, OS>
+{
     fn pin_mode() -> U2 {
         U2::B10
     }

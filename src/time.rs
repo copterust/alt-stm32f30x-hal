@@ -85,9 +85,7 @@ impl MonoTimer {
         // now the CYCCNT counter can't be stopped or resetted
         drop(dwt);
 
-        MonoTimer {
-            frequency: clocks.sysclk(),
-        }
+        MonoTimer { frequency: clocks.sysclk(), }
     }
 
     /// Returns the frequency at which the monotonic timer is operating at
@@ -97,9 +95,7 @@ impl MonoTimer {
 
     /// Returns an `Instant` corresponding to "now"
     pub fn now(&self) -> Instant {
-        Instant {
-            now: DWT::get_cycle_count(),
-        }
+        Instant { now: DWT::get_cycle_count(), }
     }
 }
 
