@@ -339,12 +339,12 @@ macro_rules! tim {
                     let mode_bits: u32 = nm.channel_mode().into();
                     let mask: u32 = 0b111;
                     if index < 2 {
-                        let offset: u32 = index * 2;
+                        let offset: u32 = (index + 1) * 4 ;
                         tim.ccmr1_output.modify(|r, w| unsafe {
                             w.bits((r.bits() & !(mask << offset)) | ((mode_bits & mask) << offset))
                         })
                     } else {
-                        let offset: u32 = (index - 2) * 2;
+                        let offset: u32 = (index - 2) * 4;
                         tim.ccmr2_output.modify(|r, w| unsafe {
                             w.bits((r.bits() & !(mask << offset)) | ((mode_bits & mask) << offset))
                         })
@@ -359,7 +359,7 @@ macro_rules! tim {
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
                     let mask = true;
                     if index < 2 {
-                        let offset: u32 = 3 + (index * 2);
+                        let offset: u32 = 3 + (index * 4);
                         tim.ccmr1_output.modify(|r, w| unsafe {
                             w.bits(
                                 (r.bits() & !((mask as u32) << offset))
@@ -367,7 +367,7 @@ macro_rules! tim {
                             )
                         })
                     } else {
-                        let offset: u32 = 3 + (index - 2) * 2;
+                        let offset: u32 = 3 + (index - 2) * 4;
                         tim.ccmr2_output.modify(|r, w| unsafe {
                             w.bits(
                                 (r.bits() & !((mask as u32) << offset))
@@ -442,10 +442,10 @@ macro_rules! tim {
                     self.tim.cnt.reset();
                     let timeout = timeout.into();
                     let frequency = timeout.0;
-                    let ticks = self.clocks.pclk1().0 * if self.clocks.ppre1() == 1 { 1 } else { 2 }
-                        / frequency;
+                    let mult = if self.clocks.ppre1() == 1 { 1 } else { 2 };
+                    let ticks = self.clocks.pclk1().0 * mult / frequency;
                     let psc = u16((ticks - 1) / (1 << 16)).unwrap();
-                    self.tim.psc.write(|w| unsafe { w.psc().bits(psc) });
+                    self.tim.psc.write(|w| unsafe { w.bits(u32(psc)) });
                     let arr = u16(ticks / u32(psc + 1)).unwrap();
                     self.tim.arr.write(|w| unsafe { w.bits(u32(arr)) });
                     self.timeout = timeout;
@@ -474,7 +474,7 @@ macro_rules! tim {
                 /// Enable timer
                 pub fn enable(&mut self) {
                     // enable counter
-                    self.tim.cr1.modify(|_, w| w.cen().set_bit());
+                    self.tim.cr1.modify(|_, w| w.cen().bit(true));
                 }
             }
 
