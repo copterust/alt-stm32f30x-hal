@@ -18,7 +18,7 @@ pub struct PwmBinding<P: gpio::GPIOPin,
 impl<P: gpio::GPIOPin, C: timer::TimerChannel, AF: gpio::AltFnNum>
     PwmBinding<P, C, AF>
 {
-    /// opun
+    /// Consumes PwmBinding returning pin and channel
     pub fn release(self) -> (P, C) {
         (self.pin, self.channel)
     }
@@ -100,7 +100,8 @@ macro_rules! pwm {
                        timer::$TIM::Channel<timer::$CHN, CM>,
                        gpio::$AF>
         {
-            /// Binds pin to channel to init pwm
+            /// Binds PIN to Timer's channel and configures them to act as pwm;
+            /// you can also use ::new with type annotations.
             pub fn $CRFN(
                 pin: gpio::$PINMOD::$PIN<PT, PM>,
                 channel: timer::$TIM::Channel<timer::$CHN, CM>)
@@ -110,22 +111,20 @@ macro_rules! pwm {
                                                               gpio::$SPEED>>,
                               timer::$TIM::Channel<timer::$CHN, timer::Pwm1>,
                               gpio::$AF> {
-                let pin = pin.alternating(gpio::$AF)
-                             .output_speed(gpio::$SPEED)
-                             .output_type(gpio::$PP)
-                             .alt_fn(gpio::$AF);
-                let mut channel = channel.mode(timer::Pwm1);
-                channel.preload($CHPE);
-                PwmBinding { pin,
-                             channel,
-                             _af: PhantomData, }
+                PwmBinding::<gpio::$PINMOD::$PIN<_, _>,
+                           timer::$TIM::Channel<timer::$CHN, _>,
+                           gpio::$AF>::new(pin, channel)
+            }
+
+            /// Modify channel's preload
+            pub fn channel_preload(&mut self, enabled: bool) {
+                self.channel.preload(enabled)
             }
         }
     };
 }
 
 // XXX: don't force speed?
-// XXX: don't reset preload?
 // XXX: don't force Pwm1? allow Pwm2 as well?
 
 pwm!(bind_pa0_tim2_ch1,
