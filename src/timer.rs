@@ -31,7 +31,7 @@ pub enum Event {
     TimeOut,
 }
 
-/// Marker trait for timer channel
+/// Timer channel
 pub trait TimerChannel {
     /// Enable channel
     fn enable(&mut self);
@@ -332,30 +332,29 @@ macro_rules! tim {
                     });
                 }
 
-                /// Change output mode
+                /// Change channel output mode
                 pub fn mode<NM: ChMode>(self, nm: NM) -> Channel<CN, NM> {
-                    let index: u32 = CN::channel_number().into();
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
-                    let mode_bits: u32 = nm.channel_mode().into();
-                    let mask: u32 = 0b111;
-                    if index < 2 {
-                        let offset: u32 = (index + 1) * 4 ;
-                        tim.ccmr1_output.modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(mask << offset)) | ((mode_bits & mask) << offset))
-                        })
-                    } else {
-                        let offset: u32 = (index - 2) * 4;
-                        tim.ccmr2_output.modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(mask << offset)) | ((mode_bits & mask) << offset))
-                        })
-                    };
+                    let mode_bits: u8 = nm.channel_mode().into();
+                    unsafe {
+                        match CN::channel_number() {
+                            U2::B00 => tim.ccmr1_output
+                                .write(|w| w.oc1m().bits(mode_bits)),
+                            U2::B01 => tim.ccmr1_output
+                                .write(|w| w.oc2m().bits(mode_bits)),
+                            U2::B10 => tim.ccmr2_output
+                                .write(|w| w.oc3m().bits(mode_bits)),
+                            U2::B11 => tim.ccmr2_output
+                                .write(|w| w.oc4m().bits(mode_bits)),
+                        }
+                    }
 
                     unsafe { transmute(self) }
                 }
 
                 /// Set preload
                 pub fn preload(&mut self, value: bool) {
-                    let index: u32 = CN::channel_number().into();
+                    let index:u32 = CN::channel_number().into();
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
                     let mask = true;
                     if index < 2 {
