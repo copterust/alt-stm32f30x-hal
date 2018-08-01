@@ -504,6 +504,22 @@ macro_rules! tim {
                 }
             }
 
+            impl Timer<ChannelFree, ChannelFree, ChannelFree, ChannelFree> {
+                /// Get all channels
+                pub fn take_all(self) -> (Channel<CH1, Inactive>,
+                                          Channel<CH2, Inactive>,
+                                          Channel<CH3, Inactive>,
+                                          Channel<CH4, Inactive>,
+                                          Timer<ChannelTaken, ChannelTaken, ChannelTaken, ChannelTaken>) {
+                    let (ch1, t) = self.take_ch1();
+                    let (ch2, t) = t.take_ch2();
+                    let (ch3, t) = t.take_ch3();
+                    let (ch4, t) = t.take_ch4();
+                    (ch1, ch2, ch3, ch4, t)
+                }
+            }
+
+
             impl<C2: ChState, C3: ChState, C4: ChState> Timer<ChannelFree, C2, C3, C4> {
                 /// Get channel 1
                 pub fn take_ch1(self) -> (Channel<CH1, Inactive>, Timer<ChannelTaken, C2, C3, C4>) {
