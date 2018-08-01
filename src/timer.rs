@@ -339,13 +339,13 @@ macro_rules! tim {
                     unsafe {
                         match CN::channel_number() {
                             U2::B00 => tim.ccmr1_output
-                                .write(|w| w.oc1m().bits(mode_bits)),
+                                .modify(|_, w| w.oc1m().bits(mode_bits)),
                             U2::B01 => tim.ccmr1_output
-                                .write(|w| w.oc2m().bits(mode_bits)),
+                                .modify(|_, w| w.oc2m().bits(mode_bits)),
                             U2::B10 => tim.ccmr2_output
-                                .write(|w| w.oc3m().bits(mode_bits)),
+                                .modify(|_, w| w.oc3m().bits(mode_bits)),
                             U2::B11 => tim.ccmr2_output
-                                .write(|w| w.oc4m().bits(mode_bits)),
+                                .modify(|_, w| w.oc4m().bits(mode_bits)),
                         }
                     }
 
