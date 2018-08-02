@@ -4,13 +4,6 @@ rust:
   - beta
   - nightly
 
-matrix:
-  include:
-    - addons:
-        apt:
-          packages:
-            - gcc-arm-none-eabi
-
 install:
   - rustup target add thumbv7em-none-eabi
 
