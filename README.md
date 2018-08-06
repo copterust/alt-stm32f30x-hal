@@ -12,8 +12,9 @@ Library is available via [crates.io](https://crates.io/crates/alt-stm32f30x-hal)
 
 ```
 [dependencies.alt-stm32f30x-hal]
-version = "0.3.0"
+version = "0.5.0"
 ```
+
 
 ## Documentation
 
