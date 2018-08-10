@@ -6,9 +6,9 @@ use stm32f30x::{I2C1, I2C2};
 use gpio::gpioa::{PA10, PA9};
 use gpio::gpiob::{PB6, PB7, PB8, PB9};
 use gpio::gpiof::{PF0, PF1, PF6};
-use gpio::{AF4, AltFn, OutputSpeed, OutputType, PullType};
+use gpio::{AltFn, OutputSpeed, OutputType, PullType, AF4};
 use hal::blocking::i2c::{Write, WriteRead};
-use rcc::{APB1, Clocks};
+use rcc::{Clocks, APB1};
 use time::Hertz;
 
 /// I2C error
@@ -41,33 +41,33 @@ unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
     for PB8<PT, AltFn<AF4, OT, OS>>
 {}
 
-unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C2>
     for PA9<PT, AltFn<AF4, OT, OS>>
 {}
 
-unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C2>
     for PF1<PT, AltFn<AF4, OT, OS>>
 {}
 
-unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C2>
     for PF6<PT, AltFn<AF4, OT, OS>>
 {}
 
 // unsafe impl SdaPin<I2C1> for PA14<AF4> {}
 
-unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SdaPin<I2C1>
     for PB7<PT, AltFn<AF4, OT, OS>>
 {}
 
-unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SdaPin<I2C1>
     for PB9<PT, AltFn<AF4, OT, OS>>
 {}
 
-unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SdaPin<I2C2>
     for PA10<PT, AltFn<AF4, OT, OS>>
 {}
 
-unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SclPin<I2C1>
+unsafe impl<PT: PullType, OT: OutputType, OS: OutputSpeed> SdaPin<I2C2>
     for PF0<PT, AltFn<AF4, OT, OS>>
 {}
 
