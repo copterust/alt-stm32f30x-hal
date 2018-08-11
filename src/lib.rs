@@ -3,7 +3,7 @@
 //! This is an implementation of the [`embedded-hal`] traits for the STM32F30x
 //! family of microcontrollers.
 //!
-//! [`embedded-hal`]: https://github.com/japaric/embedded-hal
+//! [`embedded-hal`]: https://docs.rs/embedded-hal
 //!
 //! # Requirements
 //!
@@ -16,14 +16,14 @@
 //! [cortex-m-quickstart] instructions and add this crate as a dependency in
 //! step number 5 and make sure you enable the "rt" Cargo feature of this crate.
 //!
-//! [cortex-m-quickstart]: https://docs.rs/cortex-m-quickstart/~0.3
+//! [cortex-m-quickstart]: https://docs.rs/cortex-m-quickstart
 //!
 //! # Examples
 //!
-//! Examples of *using* these abstractions can be found in the documentation of
-//! the [`f3`] crate.
+//! Examples of *using* these abstractions can be found in [`proving-ground`]
+//! repo.
 //!
-//! [`f3`]: https://docs.rs/f3/~0.6
+//! [`proving-ground`]: https://github.com/copterust/proving-ground
 
 #![deny(missing_docs)]
 #![deny(warnings)]

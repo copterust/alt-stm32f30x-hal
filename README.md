@@ -1,6 +1,6 @@
 # `alt-stm32f30x-hal`
 
-> Alternative HAL for the STM32F30x family of microcontrollers
+> Alternative HAL implementation for the STM32F30x family of microcontrollers
 
 [`embedded-hal`]: https://crates.io/crates/embedded-hal
 
