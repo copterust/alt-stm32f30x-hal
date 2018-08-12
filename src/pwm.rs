@@ -64,17 +64,17 @@ pub trait PwmExt<SP: gpio::OutputSpeed,
 
 macro_rules! pwm {
     (
-        $CRFN:ident,($PINMOD:ident, $PIN:ident),($TIM:ident, $CHN:ident, $CHPE:expr),($AF:ident, $PP:ident)
+        $CRFN:ident, $PIN:ident,($TIM:ident, $CHN:ident, $CHPE:expr),($AF:ident, $PP:ident)
     ) => {
         impl<SP: gpio::OutputSpeed,
               PT: gpio::PullType,
               PM: gpio::PinMode,
               CM: timer::ChMode>
             PwmExt<SP, timer::$TIM::Channel<timer::$CHN, CM>, gpio::$AF>
-            for gpio::$PINMOD::$PIN<PT, PM>
+            for gpio::$PIN<PT, PM>
         {
             type OutputPin =
-                gpio::$PINMOD::$PIN<PT, gpio::AltFn<gpio::$AF, gpio::$PP, SP>>;
+                gpio::$PIN<PT, gpio::AltFn<gpio::$AF, gpio::$PP, SP>>;
             type Output = PwmBinding<Self::OutputPin,
                                      timer::$TIM::Channel<timer::$CHN,
                                                           timer::Pwm1>,
@@ -96,7 +96,7 @@ macro_rules! pwm {
         }
 
         impl<PT: gpio::PullType, PM: gpio::PinMode, CM: timer::ChMode>
-            PwmBinding<gpio::$PINMOD::$PIN<PT, PM>,
+            PwmBinding<gpio::$PIN<PT, PM>,
                        timer::$TIM::Channel<timer::$CHN, CM>,
                        gpio::$AF>
         {
@@ -110,72 +110,30 @@ macro_rules! pwm {
 
 // XXX: don't force Pwm1? allow Pwm2 as well?
 
-pwm!(bind_pa0_tim2_ch1,
-     (gpioa, PA0),
-     (tim2, CH1, true),
-     (AF1, PushPull));
+pwm!(bind_pa0_tim2_ch1, PA0, (tim2, CH1, true), (AF1, PushPull));
 
-pwm!(bind_pa1_tim2_ch2,
-     (gpioa, PA1),
-     (tim2, CH2, true),
-     (AF1, PushPull));
+pwm!(bind_pa1_tim2_ch2, PA1, (tim2, CH2, true), (AF1, PushPull));
 
-pwm!(bind_pa2_tim2_ch3,
-     (gpioa, PA2),
-     (tim2, CH3, true),
-     (AF1, PushPull));
+pwm!(bind_pa2_tim2_ch3, PA2, (tim2, CH3, true), (AF1, PushPull));
 
-pwm!(bind_pa3_tim2_ch4,
-     (gpioa, PA3),
-     (tim2, CH4, true),
-     (AF1, PushPull));
+pwm!(bind_pa3_tim2_ch4, PA3, (tim2, CH4, true), (AF1, PushPull));
 
-pwm!(bind_pc6_tim3_ch1,
-     (gpioc, PC6),
-     (tim3, CH1, true),
-     (AF2, PushPull));
+pwm!(bind_pc6_tim3_ch1, PC6, (tim3, CH1, true), (AF2, PushPull));
 
-pwm!(bind_pc7_tim3_ch1,
-     (gpioc, PC7),
-     (tim3, CH2, true),
-     (AF2, PushPull));
+pwm!(bind_pc7_tim3_ch1, PC7, (tim3, CH2, true), (AF2, PushPull));
 
-pwm!(bind_pc8_tim3_ch1,
-     (gpioc, PC8),
-     (tim3, CH3, true),
-     (AF2, PushPull));
+pwm!(bind_pc8_tim3_ch1, PC8, (tim3, CH3, true), (AF2, PushPull));
 
-pwm!(bind_pc9_tim3_ch1,
-     (gpioc, PC9),
-     (tim3, CH4, true),
-     (AF2, PushPull));
+pwm!(bind_pc9_tim3_ch1, PC9, (tim3, CH4, true), (AF2, PushPull));
 
-pwm!(bind_pb0_tim3_ch3,
-     (gpiob, PB0),
-     (tim3, CH3, true),
-     (AF2, PushPull));
+pwm!(bind_pb0_tim3_ch3, PB0, (tim3, CH3, true), (AF2, PushPull));
 
-pwm!(bind_pb1_tim3_ch4,
-     (gpiob, PB1),
-     (tim3, CH4, true),
-     (AF2, PushPull));
+pwm!(bind_pb1_tim3_ch4, PB1, (tim3, CH4, true), (AF2, PushPull));
 
-pwm!(bind_pb6_tim4_ch1,
-     (gpiob, PB6),
-     (tim4, CH1, true),
-     (AF2, PushPull));
+pwm!(bind_pb6_tim4_ch1, PB6, (tim4, CH1, true), (AF2, PushPull));
 
-pwm!(bind_pb7_tim4_ch2,
-     (gpiob, PB7),
-     (tim4, CH2, true),
-     (AF2, PushPull));
+pwm!(bind_pb7_tim4_ch2, PB7, (tim4, CH2, true), (AF2, PushPull));
 
-pwm!(bind_pb8_tim4_ch3,
-     (gpiob, PB8),
-     (tim4, CH3, true),
-     (AF2, PushPull));
+pwm!(bind_pb8_tim4_ch3, PB8, (tim4, CH3, true), (AF2, PushPull));
 
-pwm!(bind_pb9_tim4_ch4,
-     (gpiob, PB9),
-     (tim4, CH4, true),
-     (AF2, PushPull));
+pwm!(bind_pb9_tim4_ch4, PB9, (tim4, CH4, true), (AF2, PushPull));

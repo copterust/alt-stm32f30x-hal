@@ -8,13 +8,13 @@ use nb;
 use stm32f30x::{USART1, USART2, USART3};
 use void::Void;
 
-use gpio::gpioa::{PA10, PA14, PA15, PA2, PA3, PA9};
-use gpio::gpiob::{PB10, PB11, PB3, PB4, PB6, PB7};
-use gpio::gpioc::{PC10, PC11, PC4, PC5};
-use gpio::gpiod::{PD5, PD6, PD8, PD9};
-use gpio::gpioe::{PE0, PE1, PE15};
-use gpio::{AF7, AltFn, OutputSpeed, OutputType, PullType};
-use rcc::{APB1, APB2, Clocks};
+use gpio::{AltFn, OutputSpeed, OutputType, PullType, AF7};
+use gpio::{PA10, PA14, PA15, PA2, PA3, PA9};
+use gpio::{PB10, PB11, PB3, PB4, PB6, PB7};
+use gpio::{PC10, PC11, PC4, PC5};
+use gpio::{PD5, PD6, PD8, PD9};
+use gpio::{PE0, PE1, PE15};
+use rcc::{Clocks, APB1, APB2};
 use time::Bps;
 
 /// Interrupt event

@@ -3,10 +3,10 @@
 use cast::u8;
 use stm32f30x::{I2C1, I2C2};
 
-use gpio::gpioa::{PA10, PA9};
-use gpio::gpiob::{PB6, PB7, PB8, PB9};
-use gpio::gpiof::{PF0, PF1, PF6};
 use gpio::{AltFn, OutputSpeed, OutputType, PullType, AF4};
+use gpio::{PA10, PA9};
+use gpio::{PB6, PB7, PB8, PB9};
+use gpio::{PF0, PF1, PF6};
 use hal::blocking::i2c::{Read, Write, WriteRead};
 use rcc::{Clocks, APB1};
 use time::Hertz;

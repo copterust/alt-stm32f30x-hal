@@ -7,6 +7,7 @@
 use bobbin_bits::*;
 use core::intrinsics::transmute;
 use core::marker::PhantomData;
+use hal::digital::{toggleable, InputPin, OutputPin, StatefulOutputPin};
 use rcc::AHB;
 
 /// Market trait for any pin
@@ -302,44 +303,39 @@ pub trait GpioExt {
 }
 
 macro_rules! gpio {
-    ($GPIOX:ident, $gpiox:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
+    ($GPIOX:ident, $Gpiox:ident, $gpiox:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
         $($PXi:ident: ($pxi:ident, $i:expr, $AFR:ident),)+
     ]) => {
-        /// GPIO
-        pub mod $gpiox {
-            use core::marker::PhantomData;
-            use hal::digital::{InputPin, OutputPin, StatefulOutputPin, toggleable};
-            use stm32f30x::$GPIOX;
+        use stm32f30x::$GPIOX;
+        /// GPIO ports
+        pub struct $Gpiox {
+            $(
+                /// Pin $PXi
+                pub $pxi: $PXi<PullNone, Input>,
+            )+
+        }
 
-            use rcc::AHB;
-            use super::*;
+        impl GpioExt for $GPIOX {
+            type Ports = $Gpiox;
 
-            /// GPIO parts
-            pub struct Ports {
-                $(
-                    /// Pin $PXi
-                    pub $pxi: $PXi<PullNone, Input>,
-                )+
-            }
+            fn split(self, ahb: &mut AHB) -> Self::Ports {
+                ahb.enr().modify(|_, w| w.$iopxenr().enabled());
+                ahb.rstr().modify(|_, w| w.$iopxrst().set_bit());
+                ahb.rstr().modify(|_, w| w.$iopxrst().clear_bit());
 
-            impl GpioExt for $GPIOX {
-                type Ports = Ports;
-
-                fn split(self, ahb: &mut AHB) -> Ports {
-                    ahb.enr().modify(|_, w| w.$iopxenr().enabled());
-                    ahb.rstr().modify(|_, w| w.$iopxrst().set_bit());
-                    ahb.rstr().modify(|_, w| w.$iopxrst().clear_bit());
-
-                    Ports {
-                        $(
-                            $pxi: $PXi {
-                                _pullup_state: PhantomData,
-                                _pin_mode: PhantomData
-                            },
-                        )+
-                    }
+                $Gpiox {
+                    $(
+                        $pxi: $PXi {
+                            _pullup_state: PhantomData,
+                            _pin_mode: PhantomData
+                        },
+                    )+
                 }
             }
+        }
+
+        impl $Gpiox {
+            // helper functions
 
             fn set_pin_mode<PM: PinMode>(index: u32) {
                 let offset = 2 * index;
@@ -372,241 +368,243 @@ macro_rules! gpio {
                 });
             }
 
-            /// Partially erased pin
-            pub struct $PXx<PT: PullType, PM: PinMode> {
-                i: u8,
+        }
+
+
+        /// Partially erased pin
+        pub struct $PXx<PT: PullType, PM: PinMode> {
+            i: u8,
+            _pullup_state: PhantomData<PT>,
+            _pin_mode: PhantomData<PM>
+        }
+
+        impl<PT: PullType, OT: OutputType, OS: OutputSpeed>
+            OutputPin for $PXx<PT, Output<OT, OS>> {
+                fn set_high(&mut self) {
+                    // NOTE(unsafe) atomic write to a stateless register
+                    unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
+                }
+
+                fn set_low(&mut self) {
+                    // NOTE(unsafe) atomic write to a stateless register
+                    unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + self.i))) }
+                }
+            }
+
+        impl<PT: PullType,
+        AN: AltFnNum,
+        OT: OutputType,
+        OS: OutputSpeed> OutputPin for $PXx<PT, AltFn<AN, OT, OS>> {
+            fn set_high(&mut self) {
+                // NOTE(unsafe) atomic write to a stateless register
+                unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
+            }
+
+            fn set_low(&mut self) {
+                // NOTE(unsafe) atomic write to a stateless register
+                unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + self.i))) }
+            }
+        }
+
+        impl<PT: PullType> InputPin for $PXx<PT, Input> {
+            fn is_high(&self) -> bool {
+                !self.is_low()
+            }
+
+            fn is_low(&self) -> bool {
+                // NOTE(unsafe) atomic read with no side effects
+                unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << self.i) == 0 }
+            }
+        }
+
+        $(
+            /// Pin
+            pub struct $PXi<PT: PullType, PM: PinMode> {
                 _pullup_state: PhantomData<PT>,
                 _pin_mode: PhantomData<PM>
             }
 
-            impl<PT: PullType, OT: OutputType, OS: OutputSpeed>
-                OutputPin for $PXx<PT, Output<OT, OS>> {
+            impl <PT: PullType, PM: PinMode> GPIOPin for  $PXi<PT, PM> {}
+
+            impl<PT: PullType, PM: PinMode> $PXi<PT, PM> {
+                /// Erases the pin number from the type
+                ///
+                /// This is useful when you want to collect the pins into an array where you
+                /// need all the elements to have the same type
+                pub fn downgrade(self) -> $PXx<PT, PM> {
+                    $PXx {
+                        i: $i,
+                        _pullup_state: PhantomData,
+                        _pin_mode: PhantomData
+                    }
+                }
+
+                /// Sets pull type: Floaing, PullUp, PullDown
+                pub fn pull_type<NPT: PullType>(self, pt: NPT)
+                                                -> $PXi<NPT, PM>
+                {
+                    let shift = 0 + ($i << 1);
+                    let pupdr = unsafe { &(*$GPIOX::ptr()).pupdr };
+                    let pd_bits:u32 = pt.pull_type().into();
+                    pupdr.modify(|r, w| unsafe {
+                        w.bits((r.bits() & !(0b11 << shift))
+                               | (pd_bits << shift))
+                    });
+
+                    unsafe { transmute(self) }
+                }
+
+                // XXX: it maybe makes sense to disallow this
+                //      when Pin is input already;
+                //      need to think about that
+                /// Sets io_mode to input
+                pub fn input(self) -> $PXi<PT, Input> {
+                    $Gpiox::set_pin_mode::<Input>($i);
+                    unsafe { transmute(self) }
+                }
+
+                /// Sets io_mode to analog
+                pub fn analog(self) -> $PXi<PT, Analog> {
+                    $Gpiox::set_pin_mode::<Analog>($i);
+                    unsafe { transmute(self) }
+                }
+
+                /// Set io_mode to output
+                pub fn output(self) -> $PXi<PT, Output<PushPull, LowSpeed>> {
+                    let result: $PXi<PT, Output<PushPull, LowSpeed>> =
+                        unsafe { transmute(self) };
+                    // ensure output type and speed are set
+                    let result2 = result
+                        .output_type(PushPull)
+                        .output_speed(LowSpeed);
+                    $Gpiox::set_pin_mode::<Output<PushPull, LowSpeed>>($i);
+                    result2
+                }
+
+                /// Set io_mode to altfn and set alternating function
+                pub fn alternating<AFN: AltFnNum>(self, af: AFN) -> $PXi<PT, AltFn<AFN, PushPull, LowSpeed>> {
+                    let result: $PXi<PT, AltFn<AFN, PushPull, LowSpeed>> =
+                        unsafe { transmute(self) };
+                    // ensure output type, speed, and afnum are set
+                    let result2 = result
+                        .alt_fn(af)
+                        .output_type(PushPull)
+                        .output_speed(LowSpeed);
+                    $Gpiox::set_pin_mode::<AltFn<AFN, PushPull, LowSpeed>>($i);
+                    result2
+                }
+            }
+
+            impl<PT: PullType, OT: OutputType, OS: OutputSpeed> $PXi<PT, Output<OT, OS>> {
+                /// Set output type
+                pub fn output_type<NOT: OutputType>(self, ot: NOT) -> $PXi<PT, Output<NOT, OS>> {
+                    $Gpiox::set_output_type($i, ot);
+                    unsafe { transmute(self) }
+                }
+
+                /// Set output type to PushPull
+                pub fn push_pull(self) -> $PXi<PT, Output<PushPull, OS>> {
+                    self.output_type(PushPull)
+                }
+
+                /// Set output type to OpenDrain
+                pub fn open_drain(self) -> $PXi<PT, Output<OpenDrain, OS>> {
+                    self.output_type(OpenDrain)
+                }
+
+                /// Set output speed
+                pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, Output<OT, NOS>> {
+                    $Gpiox::set_output_speed($i, os);
+                    unsafe { transmute(self) }
+                }
+            }
+
+            impl<PT: PullType, AFN: AltFnNum, OT: OutputType, OS: OutputSpeed> $PXi<PT, AltFn<AFN, OT, OS>> {
+                /// Set output type
+                pub fn output_type<NOT: OutputType>(self, ot: NOT) -> $PXi<PT, AltFn<AFN, NOT, OS>> {
+                    $Gpiox::set_output_type($i, ot);
+                    unsafe { transmute(self) }
+                }
+
+                /// Set output speed
+                pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, AltFn<AFN, OT, NOS>> {
+                    $Gpiox::set_output_speed($i, os);
+                    unsafe { transmute(self) }
+                }
+
+                /// Set altfn
+                pub fn alt_fn<NAFN: AltFnNum>(self, af: NAFN) -> $PXi<PT, AltFn<NAFN, OT, OS>> {
+                    let index = $i & (8 - 1);
+                    let shift: usize = 0 + (index << 2);
+                    let af_bits: u32 = af.alt_fn_num().into();
+                    let afr = unsafe { &(*$GPIOX::ptr()).$AFR };
+                    afr.modify(|r, w| unsafe {
+                        w.bits((r.bits() & !(0b1111 << shift))
+                               | (af_bits << shift))
+                    });
+
+                    unsafe { transmute(self) }
+                }
+            }
+
+            impl<PT: PullType, OT:OutputType, OS:OutputSpeed> OutputPin
+                for $PXi<PT, Output<OT, OS>> {
                     fn set_high(&mut self) {
                         // NOTE(unsafe) atomic write to a stateless register
-                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
                     }
 
                     fn set_low(&mut self) {
                         // NOTE(unsafe) atomic write to a stateless register
-                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + self.i))) }
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
                     }
                 }
 
-            impl<PT: PullType,
-                 AN: AltFnNum,
-                 OT: OutputType,
-                 OS: OutputSpeed> OutputPin for $PXx<PT, AltFn<AN, OT, OS>> {
+            impl<PT: PullType, AN: AltFnNum, OT:OutputType, OS:OutputSpeed> OutputPin
+                for $PXi<PT, AltFn<AN, OT, OS>> {
                     fn set_high(&mut self) {
                         // NOTE(unsafe) atomic write to a stateless register
-                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << self.i)) }
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
                     }
 
                     fn set_low(&mut self) {
                         // NOTE(unsafe) atomic write to a stateless register
-                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + self.i))) }
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
                     }
                 }
 
-            impl<PT: PullType> InputPin for $PXx<PT, Input> {
+            impl<PT: PullType, OT:OutputType, OS:OutputSpeed> StatefulOutputPin
+                for $PXi<PT, Output<OT, OS>> {
+                    fn is_set_high(&self) -> bool {
+                        !self.is_set_low()
+                    }
+
+                    fn is_set_low(&self) -> bool {
+                        // NOTE(unsafe) atomic read with no side effects
+                        unsafe { (*$GPIOX::ptr()).odr.read().bits() & (1 << $i) == 0 }
+                    }
+                }
+
+            impl<PT: PullType, OT:OutputType, OS:OutputSpeed> toggleable::Default
+                for $PXi<PT, Output<OT, OS>> {}
+
+            impl<PT: PullType> InputPin for $PXi<PT, Input> {
                 fn is_high(&self) -> bool {
                     !self.is_low()
                 }
 
                 fn is_low(&self) -> bool {
                     // NOTE(unsafe) atomic read with no side effects
-                    unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << self.i) == 0 }
+                    unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << $i) == 0 }
                 }
             }
 
-            $(
-                /// Pin
-                pub struct $PXi<PT: PullType, PM: PinMode> {
-                    _pullup_state: PhantomData<PT>,
-                    _pin_mode: PhantomData<PM>
-                }
+        )+
 
-                impl <PT: PullType, PM: PinMode> GPIOPin for  $PXi<PT, PM> {}
-
-                impl<PT: PullType, PM: PinMode> $PXi<PT, PM> {
-                    /// Erases the pin number from the type
-                    ///
-                    /// This is useful when you want to collect the pins into an array where you
-                    /// need all the elements to have the same type
-                    pub fn downgrade(self) -> $PXx<PT, PM> {
-                        $PXx {
-                            i: $i,
-                            _pullup_state: PhantomData,
-                            _pin_mode: PhantomData
-                        }
-                    }
-
-                    /// Sets pull type: Floaing, PullUp, PullDown
-                    pub fn pull_type<NPT: PullType>(self, pt: NPT)
-                                                    -> $PXi<NPT, PM>
-                    {
-                        let shift = 0 + ($i << 1);
-                        let pupdr = unsafe { &(*$GPIOX::ptr()).pupdr };
-                        let pd_bits:u32 = pt.pull_type().into();
-                        pupdr.modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b11 << shift))
-                                   | (pd_bits << shift))
-                        });
-
-                        unsafe { transmute(self) }
-                    }
-
-                    // XXX: it maybe makes sense to disallow this
-                    //      when Pin is input already;
-                    //      need to think about that
-                    /// Sets io_mode to input
-                    pub fn input(self) -> $PXi<PT, Input> {
-                        set_pin_mode::<Input>($i);
-                        unsafe { transmute(self) }
-                    }
-
-                    /// Sets io_mode to analog
-                    pub fn analog(self) -> $PXi<PT, Analog> {
-                        set_pin_mode::<Analog>($i);
-                        unsafe { transmute(self) }
-                    }
-
-                    /// Set io_mode to output
-                    pub fn output(self) -> $PXi<PT, Output<PushPull, LowSpeed>> {
-                        let result: $PXi<PT, Output<PushPull, LowSpeed>> =
-                            unsafe { transmute(self) };
-                        // ensure output type and speed are set
-                        let result2 = result
-                            .output_type(PushPull)
-                            .output_speed(LowSpeed);
-                        set_pin_mode::<Output<PushPull, LowSpeed>>($i);
-                        result2
-                    }
-
-                    /// Set io_mode to altfn and set alternating function
-                    pub fn alternating<AFN: AltFnNum>(self, af: AFN) -> $PXi<PT, AltFn<AFN, PushPull, LowSpeed>> {
-                        let result: $PXi<PT, AltFn<AFN, PushPull, LowSpeed>> =
-                            unsafe { transmute(self) };
-                        // ensure output type, speed, and afnum are set
-                        let result2 = result
-                            .alt_fn(af)
-                            .output_type(PushPull)
-                            .output_speed(LowSpeed);
-                        set_pin_mode::<AltFn<AFN, PushPull, LowSpeed>>($i);
-                        result2
-                    }
-                }
-
-                impl<PT: PullType, OT: OutputType, OS: OutputSpeed> $PXi<PT, Output<OT, OS>> {
-                    /// Set output type
-                    pub fn output_type<NOT: OutputType>(self, ot: NOT) -> $PXi<PT, Output<NOT, OS>> {
-                        set_output_type($i, ot);
-                        unsafe { transmute(self) }
-                    }
-
-                    /// Set output type to PushPull
-                    pub fn push_pull(self) -> $PXi<PT, Output<PushPull, OS>> {
-                        self.output_type(PushPull)
-                    }
-
-                    /// Set output type to OpenDrain
-                    pub fn open_drain(self) -> $PXi<PT, Output<OpenDrain, OS>> {
-                        self.output_type(OpenDrain)
-                    }
-
-                    /// Set output speed
-                    pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, Output<OT, NOS>> {
-                        set_output_speed($i, os);
-                        unsafe { transmute(self) }
-                    }
-                }
-
-                impl<PT: PullType, AFN: AltFnNum, OT: OutputType, OS: OutputSpeed> $PXi<PT, AltFn<AFN, OT, OS>> {
-                    /// Set output type
-                    pub fn output_type<NOT: OutputType>(self, ot: NOT) -> $PXi<PT, AltFn<AFN, NOT, OS>> {
-                        set_output_type($i, ot);
-                        unsafe { transmute(self) }
-                    }
-
-                    /// Set output speed
-                    pub fn output_speed<NOS: OutputSpeed>(self, os: NOS) -> $PXi<PT, AltFn<AFN, OT, NOS>> {
-                        set_output_speed($i, os);
-                        unsafe { transmute(self) }
-                    }
-
-                    /// Set altfn
-                    pub fn alt_fn<NAFN: AltFnNum>(self, af: NAFN) -> $PXi<PT, AltFn<NAFN, OT, OS>> {
-                        let index = $i & (8 - 1);
-                        let shift: usize = 0 + (index << 2);
-                        let af_bits: u32 = af.alt_fn_num().into();
-                        let afr = unsafe { &(*$GPIOX::ptr()).$AFR };
-                        afr.modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b1111 << shift))
-                                   | (af_bits << shift))
-                        });
-
-                        unsafe { transmute(self) }
-                    }
-                }
-
-                impl<PT: PullType, OT:OutputType, OS:OutputSpeed> OutputPin
-                    for $PXi<PT, Output<OT, OS>> {
-                        fn set_high(&mut self) {
-                            // NOTE(unsafe) atomic write to a stateless register
-                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
-                        }
-
-                        fn set_low(&mut self) {
-                            // NOTE(unsafe) atomic write to a stateless register
-                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
-                        }
-                    }
-
-                impl<PT: PullType, AN: AltFnNum, OT:OutputType, OS:OutputSpeed> OutputPin
-                    for $PXi<PT, AltFn<AN, OT, OS>> {
-                        fn set_high(&mut self) {
-                            // NOTE(unsafe) atomic write to a stateless register
-                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
-                        }
-
-                        fn set_low(&mut self) {
-                            // NOTE(unsafe) atomic write to a stateless register
-                            unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
-                        }
-                    }
-
-                impl<PT: PullType, OT:OutputType, OS:OutputSpeed> StatefulOutputPin
-                    for $PXi<PT, Output<OT, OS>> {
-                        fn is_set_high(&self) -> bool {
-                            !self.is_set_low()
-                        }
-
-                        fn is_set_low(&self) -> bool {
-                            // NOTE(unsafe) atomic read with no side effects
-                            unsafe { (*$GPIOX::ptr()).odr.read().bits() & (1 << $i) == 0 }
-                        }
-                    }
-
-                impl<PT: PullType, OT:OutputType, OS:OutputSpeed> toggleable::Default
-                    for $PXi<PT, Output<OT, OS>> {}
-
-                impl<PT: PullType> InputPin for $PXi<PT, Input> {
-                    fn is_high(&self) -> bool {
-                        !self.is_low()
-                    }
-
-                    fn is_low(&self) -> bool {
-                        // NOTE(unsafe) atomic read with no side effects
-                        unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << $i) == 0 }
-                    }
-                }
-
-            )+
-
-        }
     }
 }
 
-gpio!(GPIOA, gpioa, iopaen, ioparst, PAx, [
+gpio!(GPIOA, Gpioa, gpioa, iopaen, ioparst, PAx, [
     PA0: (pa0, 0, afrl),
     PA1: (pa1, 1, afrl),
     PA2: (pa2, 2, afrl),
@@ -625,7 +623,7 @@ gpio!(GPIOA, gpioa, iopaen, ioparst, PAx, [
     PA15: (pa15, 15, afrh),
 ]);
 
-gpio!(GPIOB, gpiob, iopben, iopbrst, PBx, [
+gpio!(GPIOB, Gpiob, gpiob, iopben, iopbrst, PBx, [
     PB0: (pb0, 0, afrl),
     PB1: (pb1, 1, afrl),
     PB2: (pb2, 2, afrl),
@@ -644,7 +642,7 @@ gpio!(GPIOB, gpiob, iopben, iopbrst, PBx, [
     PB15: (pb15, 15, afrh),
 ]);
 
-gpio!(GPIOC, gpioc, iopcen, iopcrst, PCx, [
+gpio!(GPIOC, Gpioc, gpioc, iopcen, iopcrst, PCx, [
     PC0: (pc0, 0, afrl),
     PC1: (pc1, 1, afrl),
     PC2: (pc2, 2, afrl),
@@ -663,7 +661,7 @@ gpio!(GPIOC, gpioc, iopcen, iopcrst, PCx, [
     PC15: (pc15, 15, afrh),
 ]);
 
-gpio!(GPIOD, gpiod, iopden, iopdrst, PDx, [
+gpio!(GPIOD, Gpiod, gpiod, iopden, iopdrst, PDx, [
     PD0: (pd0, 0, afrl),
     PD1: (pd1, 1, afrl),
     PD2: (pd2, 2, afrl),
@@ -682,7 +680,7 @@ gpio!(GPIOD, gpiod, iopden, iopdrst, PDx, [
     PD15: (pd15, 15, afrh),
 ]);
 
-gpio!(GPIOE, gpioe, iopeen, ioperst, PEx, [
+gpio!(GPIOE, Gpioe, gpioe, iopeen, ioperst, PEx, [
     PE0: (pe0, 0, afrl),
     PE1: (pe1, 1, afrl),
     PE2: (pe2, 2, afrl),
@@ -701,7 +699,7 @@ gpio!(GPIOE, gpioe, iopeen, ioperst, PEx, [
     PE15: (pe15, 15, afrh),
 ]);
 
-gpio!(GPIOF, gpiof, iopfen, iopfrst, PFx, [
+gpio!(GPIOF, Gpiof, gpiof, iopfen, iopfrst, PFx, [
     PF0: (pf0, 0, afrl),
     PF1: (pf1, 1, afrl),
     PF2: (pf2, 2, afrl),
