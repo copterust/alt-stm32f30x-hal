@@ -7,7 +7,7 @@ use gpio::gpioa::{PA10, PA9};
 use gpio::gpiob::{PB6, PB7, PB8, PB9};
 use gpio::gpiof::{PF0, PF1, PF6};
 use gpio::{AltFn, OutputSpeed, OutputType, PullType, AF4};
-use hal::blocking::i2c::{Write, WriteRead};
+use hal::blocking::i2c::{Read, Write, WriteRead};
 use rcc::{Clocks, APB1};
 use time::Hertz;
 
@@ -308,6 +308,49 @@ macro_rules! hal {
                     Ok(())
                 }
             }
+
+
+            impl<PINS> Read for I2c<$I2CX, PINS> {
+                type Error = Error;
+
+                fn read(
+                    &mut self,
+                    addr: u8,
+                    buffer: &mut [u8],
+                ) -> Result<(), Error> {
+                    // TODO support transfers of more than 255 bytes
+                    assert!(buffer.len() < 256 && buffer.len() > 0);
+
+                    // TODO do we have to explicitly wait here if the bus is busy (e.g. another
+                    // master is communicating)?
+
+                    // reSTART and prepare to receive bytes into `buffer`
+                    self.i2c.cr2.write(|w| {
+                        w.sadd1()
+                            .bits(addr)
+                            .rd_wrn()
+                            .set_bit()
+                            .nbytes()
+                            .bits(buffer.len() as u8)
+                            .start()
+                            .set_bit()
+                            .autoend()
+                            .set_bit()
+                    });
+
+                    for byte in buffer {
+                        // Wait until we have received something
+                        busy_wait!(self.i2c, rxne);
+
+                        *byte = self.i2c.rxdr.read().rxdata().bits();
+                    }
+
+                    // automatic STOP
+
+                    Ok(())
+                }
+            }
+
         )+
     }
 }
