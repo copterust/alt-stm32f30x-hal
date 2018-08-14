@@ -6,7 +6,7 @@
 
 [![Build Status](https://travis-ci.org/copterust/alt-stm32f30x-hal.svg?branch=master)](https://travis-ci.org/copterust/alt-stm32f30x-hal)
 
-## Using
+## Usage
 
 Library is available via [crates.io](https://crates.io/crates/alt-stm32f30x-hal):
 
@@ -18,7 +18,7 @@ version = "0.5.0"
 
 ## Documentation
 
-Available via [docs.rs](https://docs.rs/alt-stm32f30x-hal/0.3.0/alt_stm32f30x_hal/)
+Available via [docs.rs](https://docs.rs/alt-stm32f30x-hal/)
 
 ## License
 
