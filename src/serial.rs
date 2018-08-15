@@ -234,6 +234,20 @@ macro_rules! hal {
                     let rdr = unsafe { (*$USARTX::ptr()).rdr.read() };
                     (rdr.bits() & 0xFF) as u8
                 }
+
+                /// clear framing error
+                pub fn clear_framing_error(&mut self) -> u8 {
+                    unsafe { (*$USARTX::ptr()).icr.write(|w| w.fecf().set_bit()) };
+                    let rdr = unsafe { (*$USARTX::ptr()).rdr.read() };
+                    (rdr.bits() & 0xFF) as u8
+                }
+
+                /// clear noise error
+                pub fn clear_noise_error(&mut self) -> u8 {
+                    unsafe { (*$USARTX::ptr()).icr.write(|w| w.ncf().set_bit()) };
+                    let rdr = unsafe { (*$USARTX::ptr()).rdr.read() };
+                    (rdr.bits() & 0xFF) as u8
+                }
             }
 
             impl serial::Read<u8> for Rx<$USARTX> {
