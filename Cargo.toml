@@ -6,7 +6,7 @@ keywords = ["arm", "cortex-m", "stm32", "hal"]
 license = "MIT OR Apache-2.0"
 name = "alt-stm32f30x-hal"
 repository = "https://github.com/copterust/alt-stm32f30x-hal"
-version = "0.6.1-alpha.0"
+version = "0.6.1"
 
 [dependencies]
 cortex-m = "0.5.0"
