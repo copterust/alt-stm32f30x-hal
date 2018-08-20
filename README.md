@@ -8,7 +8,7 @@
 
 ## Usage
 
-Library is available via crates.io [![crates.io](http://meritbadge.herokuapp.com/alt-stm32f30x?style=flat-square)](https://crates.io/crates/alt-stm32f30x-hal).
+Library is available via crates.io [![crates.io](http://meritbadge.herokuapp.com/alt-stm32f30x-hal?style=flat-square)](https://crates.io/crates/alt-stm32f30x-hal).
 
 ## Documentation
 
