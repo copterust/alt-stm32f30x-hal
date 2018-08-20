@@ -8,17 +8,13 @@
 
 ## Usage
 
-Library is available via [crates.io](https://crates.io/crates/alt-stm32f30x-hal):
-
-```
-[dependencies.alt-stm32f30x-hal]
-version = "0.5.0"
-```
-
+Library is available via crates.io [![crates.io](http://meritbadge.herokuapp.com/alt-stm32f30x?style=flat-square)](https://crates.io/crates/alt-stm32f30x-hal).
 
 ## Documentation
 
-Available via [docs.rs](https://docs.rs/alt-stm32f30x-hal/)
+Available via [docs.rs](https://docs.rs/alt-stm32f30x-hal/).
+
+Number of examples are available in [proving-ground](https://github.com/copterust/proving-ground).
 
 ## License
 
