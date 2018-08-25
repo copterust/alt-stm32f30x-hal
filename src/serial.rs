@@ -167,7 +167,7 @@ macro_rules! serial {
 
         impl<TX, RX> Serial<$USARTX, (TX, RX)> {
             /// Returns associated interrupt
-            pub fn get_interrut(&self) -> Interrupt {
+            pub fn get_interrupt(&self) -> Interrupt {
                 Interrupt::$INTNAME
             }
 
