@@ -56,12 +56,6 @@ pub struct Tx<USART> {
     _usart: PhantomData<USART>,
 }
 
-/// USART interrupt provider
-pub trait SerialInterruptExt {
-    /// Get interrupt associated to USART
-    fn interrupt() -> Interrupt;
-}
-
 /// Serial extension for USART
 pub trait SerialExt<USART, ITX, IRX, TX, RX> {
     /// Transforms USART to [`Serial`] by consuming it and pair of (tx, rx)
@@ -170,13 +164,6 @@ macro_rules! serial {
                     }
             )+
         )+
-
-        impl SerialInterruptExt for $USARTX {
-            fn interrupt() -> Interrupt {
-                Interrupt::$INTNAME
-            }
-        }
-
 
         impl<TX, RX> Serial<$USARTX, (TX, RX)> {
             /// Returns associated interrupt
