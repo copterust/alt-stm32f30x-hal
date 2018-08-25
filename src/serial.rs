@@ -78,6 +78,29 @@ macro_rules! serial {
      $pclkX:ident,
      $afn:ident,
      $speed:ident,
+     [$($txpin: ident, )+],
+     $restrx: tt
+    ) => {
+        serial!{$USARTX,
+                $apbenr,
+                $apbrstr,
+                $usartXen,
+                $usartXrst,
+                $pclkX,
+                $afn,
+                $speed,
+                [$(
+                    ($txpin, $restrx),
+                )+]}
+    };
+    ($USARTX:ident,
+     $apbenr:ident,
+     $apbrstr:ident,
+     $usartXen:ident,
+     $usartXrst:ident,
+     $pclkX:ident,
+     $afn:ident,
+     $speed:ident,
      [$(($txpin: ident, [$($rxpin: ident,)+]), )+]
     ) => {
         $(
@@ -269,8 +292,6 @@ macro_rules! serial {
 }
 
 // XXX: we can't use GATs yet, so had to retort to macros
-// XXX: we also can't use non-nested repeatiation to produce
-//      permutations so we have to copy-paste %(
 serial!(USART1,
         apb2enr,
         apb2rstr,
@@ -279,10 +300,8 @@ serial!(USART1,
         pclk2,
         AF7,
         HighSpeed, // XXX: not sure, maybe we should allow setting this
-        [(PA9, [PA10, PB7, PC5, PE1,]),
-         (PB6, [PA10, PB7, PC5, PE1,]),
-         (PC4, [PA10, PB7, PC5, PE1,]),
-         (PE0, [PA10, PB7, PC5, PE1,]),]);
+        [PA9, PB6, PC4, PE0,],
+        [PA10, PB7, PC5, PE1,]);
 serial!(USART2,
         apb1enr,
         apb1rstr,
@@ -291,10 +310,8 @@ serial!(USART2,
         pclk1,
         AF7,
         HighSpeed,
-        [(PA2, [PA3, PA15, PB4, PD6,]),
-         (PA14, [PA3, PA15, PB4, PD6,]),
-         (PB3, [PA3, PA15, PB4, PD6,]),
-         (PD5, [PA3, PA15, PB4, PD6,]),]);
+        [PA2, PA14, PB3, PD5,],
+        [PA3, PA15, PB4, PD6,]);
 serial!(USART3,
         apb1enr,
         apb1rstr,
@@ -303,6 +320,5 @@ serial!(USART3,
         pclk1,
         AF7,
         HighSpeed,
-        [(PB10, [PB11, PC11, PD9, PE15,]),
-         (PC10, [PB11, PC11, PD9, PE15,]),
-         (PD8, [PB11, PC11, PD9, PE15,]),]);
+        [PB10, PC10, PD8,],
+        [PB11, PC11, PD9, PE15,]);
