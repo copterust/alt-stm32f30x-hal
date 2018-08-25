@@ -10,7 +10,7 @@ use core::marker::PhantomData;
 use hal::digital::{toggleable, InputPin, OutputPin, StatefulOutputPin};
 use rcc::AHB;
 
-/// Market trait for any pin
+/// Marker trait for any pin
 pub trait GPIOPin {}
 
 /// Trait for pin mode
@@ -424,7 +424,9 @@ macro_rules! gpio {
                 _pin_mode: PhantomData<PM>
             }
 
-            impl <PT: PullType, PM: PinMode> GPIOPin for  $PXi<PT, PM> {}
+            impl <PT: PullType, PM: PinMode> GPIOPin for $PXi<PT, PM> {
+
+            }
 
             impl<PT: PullType, PM: PinMode> $PXi<PT, PM> {
                 /// Erases the pin number from the type
