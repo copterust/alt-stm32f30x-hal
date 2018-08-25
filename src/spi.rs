@@ -6,12 +6,12 @@ use hal::spi::{FullDuplex, Mode, Phase, Polarity};
 use nb;
 use stm32f30x::{SPI1, SPI2, SPI3};
 
-use crate::gpio::{AltFn, OutputSpeed, OutputType, PullType, AF5, AF6};
-use crate::gpio::{PA5, PA6, PA7};
-use crate::gpio::{PB13, PB14, PB15, PB3, PB4, PB5};
-use crate::gpio::{PC10, PC11, PC12};
-use crate::rcc::{Clocks, APB1, APB2};
-use crate::time::Hertz;
+use gpio::{AltFn, OutputSpeed, OutputType, PullType, AF5, AF6};
+use gpio::{PA5, PA6, PA7};
+use gpio::{PB13, PB14, PB15, PB3, PB4, PB5};
+use gpio::{PC10, PC11, PC12};
+use rcc::{Clocks, APB1, APB2};
+use time::Hertz;
 
 /// SPI error
 #[derive(Debug)]

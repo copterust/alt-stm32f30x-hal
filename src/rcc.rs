@@ -5,8 +5,8 @@ use core::cmp;
 use cast::u32;
 use stm32f30x::{rcc, RCC};
 
-use crate::flash::ACR;
-use crate::time::Hertz;
+use flash::ACR;
+use time::Hertz;
 
 /// Extension trait that constrains the `RCC` peripheral
 pub trait RccExt {

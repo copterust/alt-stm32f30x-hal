@@ -7,8 +7,8 @@
 use bobbin_bits::*;
 use core::intrinsics::transmute;
 use core::marker::PhantomData;
-use crate::rcc::AHB;
 use hal::digital::{toggleable, InputPin, OutputPin, StatefulOutputPin};
+use rcc::AHB;
 
 /// Marker trait for any pin
 pub trait GPIOPin {}

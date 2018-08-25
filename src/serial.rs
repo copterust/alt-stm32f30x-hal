@@ -8,14 +8,14 @@ use nb;
 use stm32f30x::{Interrupt, RCC, USART1, USART2, USART3};
 use void::Void;
 
-use crate::gpio::{AltFn, HighSpeed, PinMode, PullType, PushPull, AF7};
-use crate::gpio::{PA10, PA14, PA15, PA2, PA3, PA9};
-use crate::gpio::{PB10, PB11, PB3, PB4, PB6, PB7};
-use crate::gpio::{PC10, PC11, PC4, PC5};
-use crate::gpio::{PD5, PD6, PD8, PD9};
-use crate::gpio::{PE0, PE1, PE15};
-use crate::rcc::Clocks;
-use crate::time::Bps;
+use gpio::{AltFn, HighSpeed, PinMode, PullType, PushPull, AF7};
+use gpio::{PA10, PA14, PA15, PA2, PA3, PA9};
+use gpio::{PB10, PB11, PB3, PB4, PB6, PB7};
+use gpio::{PC10, PC11, PC4, PC5};
+use gpio::{PD5, PD6, PD8, PD9};
+use gpio::{PE0, PE1, PE15};
+use rcc::Clocks;
+use time::Bps;
 
 /// Interrupt event
 pub enum Event {
@@ -58,7 +58,7 @@ pub struct Tx<USART> {
 
 /// USART interrupt provider
 pub trait SerialInterruptExt {
-    /// Get associated interrupt
+    /// Get interrupt associated to USART
     fn interrupt() -> Interrupt;
 }
 
@@ -115,12 +115,12 @@ macro_rules! serial {
         $(
             $(
                 impl <PT: PullType,
-                      PM: PinMode>
+                PM: PinMode>
                     SerialExt<$USARTX,
-                              $txpin<PT, PM>,
-                              $rxpin<PT, PM>,
-                              $txpin<PT, AltFn<$afn, PushPull, $speed>>,
-                              $rxpin<PT, AltFn<$afn, PushPull, $speed>>>
+                $txpin<PT, PM>,
+                $rxpin<PT, PM>,
+                $txpin<PT, AltFn<$afn, PushPull, $speed>>,
+                $rxpin<PT, AltFn<$afn, PushPull, $speed>>>
                     for $USARTX {
                         fn serial(self,
                                   pins: ($txpin<PT, PM>, $rxpin<PT, PM>),
@@ -176,6 +176,7 @@ macro_rules! serial {
                 Interrupt::$INTNAME
             }
         }
+
 
         impl<TX, RX> Serial<$USARTX, (TX, RX)> {
             /// Returns associated interrupt
