@@ -28,7 +28,6 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 #![no_std]
-#![feature(associated_type_defaults)]
 
 extern crate bobbin_bits;
 extern crate cast;
