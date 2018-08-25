@@ -58,8 +58,9 @@ pub struct Tx<USART> {
 
 /// Serial extension for USART
 pub trait SerialExt<USART, ITX, IRX, TX, RX> {
-    /// Transforms USART to [`Serial`] by consuming it and pair of (tx, rx)
-    /// pins.
+    /// Configures USART and consumes pair of (tx, rx) pins
+    /// to act as serial port.
+    /// Returns [`Serial`].
     ///
     /// [`Serial`]: ./struct.Serial.html
     fn serial(self,
