@@ -1,3 +1,5 @@
+cargo-features = ["edition", "rename-dependency"]
+
 [package]
 authors = ["Roma Sokolov", "Alexander Zhuravlev", "Jorge Aparicio <jorge@japaric.io>"]
 categories = ["embedded", "hardware-support", "no-std"]
@@ -8,6 +10,7 @@ license = "MIT OR Apache-2.0"
 name = "alt-stm32f30x-hal"
 repository = "https://github.com/copterust/alt-stm32f30x-hal"
 version = "0.7.2-alpha.0"
+edition = '2018'
 
 [dependencies]
 cortex-m = "0.5.4"
@@ -15,9 +18,10 @@ nb = "0.1.0"
 stm32f30x = "0.7.0"
 bobbin-bits = "0.1.1"
 
-[dependencies.embedded-hal]
-version = "0.2.1"
+[dependencies.hal]
 features = ["unproven"]
+version = "0.2.1"
+package = "embedded-hal"
 
 [dependencies.void]
 default-features = false

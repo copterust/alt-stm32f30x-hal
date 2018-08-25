@@ -2,16 +2,19 @@
 
 use bobbin_bits::*;
 use cast::{u16, u32};
+
 use core::intrinsics::transmute;
+use core::marker::PhantomData;
+use void::Void;
+
 use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m::peripheral::SYST;
 use hal::timer::{CountDown, Periodic};
 use nb;
 use stm32f30x::{TIM2, TIM3, TIM4};
-use void::Void;
 
-use rcc::Clocks;
-use time::Hertz;
+use crate::rcc::{self, Clocks};
+use crate::time::Hertz;
 
 #[doc(hidden)]
 mod private {
@@ -267,10 +270,6 @@ macro_rules! tim {
         /// $TIMSRC impl
         pub mod $timmod {
             use super::*;
-            use core::marker::PhantomData;
-            use rcc;
-            use rcc::Clocks;
-            use time::Hertz;
 
             /// Timer channel
             pub struct Channel<CN: ChNum, M: ChMode> {

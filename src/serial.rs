@@ -5,17 +5,17 @@ use core::ptr;
 
 use hal::serial;
 use nb;
-use stm32f30x::{RCC, USART1, USART2, USART3};
+use stm32f30x::{Interrupt, RCC, USART1, USART2, USART3};
 use void::Void;
 
-use gpio::{AltFn, HighSpeed, PinMode, PullType, PushPull, AF7};
-use gpio::{PA10, PA14, PA15, PA2, PA3, PA9};
-use gpio::{PB10, PB11, PB3, PB4, PB6, PB7};
-use gpio::{PC10, PC11, PC4, PC5};
-use gpio::{PD5, PD6, PD8, PD9};
-use gpio::{PE0, PE1, PE15};
-use rcc::Clocks;
-use time::Bps;
+use crate::gpio::{AltFn, HighSpeed, PinMode, PullType, PushPull, AF7};
+use crate::gpio::{PA10, PA14, PA15, PA2, PA3, PA9};
+use crate::gpio::{PB10, PB11, PB3, PB4, PB6, PB7};
+use crate::gpio::{PC10, PC11, PC4, PC5};
+use crate::gpio::{PD5, PD6, PD8, PD9};
+use crate::gpio::{PE0, PE1, PE15};
+use crate::rcc::Clocks;
+use crate::time::Bps;
 
 /// Interrupt event
 pub enum Event {
@@ -71,6 +71,7 @@ pub trait SerialExt<USART, ITX, IRX, TX, RX> {
 
 macro_rules! serial {
     ($USARTX:ident,
+     $INTNAME:ident,
      $apbenr:ident,
      $apbrstr:ident,
      $usartXen:ident,
@@ -82,6 +83,7 @@ macro_rules! serial {
      $restrx: tt
     ) => {
         serial!{$USARTX,
+                $INTNAME,
                 $apbenr,
                 $apbrstr,
                 $usartXen,
@@ -94,6 +96,7 @@ macro_rules! serial {
                 )+]}
     };
     ($USARTX:ident,
+     $INTNAME:ident,
      $apbenr:ident,
      $apbrstr:ident,
      $usartXen:ident,
@@ -162,8 +165,12 @@ macro_rules! serial {
             )+
         )+
 
-
         impl<TX, RX> Serial<$USARTX, (TX, RX)> {
+            /// Returns associated interrupt
+            pub fn get_interrut(&self) -> Interrupt {
+                Interrupt::$INTNAME
+            }
+
             /// Starts listening for an interrupt event
             pub fn listen(&mut self, event: Event) {
                 match event {
@@ -293,6 +300,7 @@ macro_rules! serial {
 
 // XXX: we can't use GATs yet, so had to retort to macros
 serial!(USART1,
+        USART1_EXTI25,
         apb2enr,
         apb2rstr,
         usart1en,
@@ -303,6 +311,7 @@ serial!(USART1,
         [PA9, PB6, PC4, PE0,],
         [PA10, PB7, PC5, PE1,]);
 serial!(USART2,
+        USART2_EXTI26,
         apb1enr,
         apb1rstr,
         usart2en,
@@ -313,6 +322,7 @@ serial!(USART2,
         [PA2, PA14, PB3, PD5,],
         [PA3, PA15, PB4, PD6,]);
 serial!(USART3,
+        USART3_EXTI28,
         apb1enr,
         apb1rstr,
         usart3en,

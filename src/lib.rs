@@ -29,13 +29,7 @@
 #![deny(warnings)]
 #![no_std]
 
-extern crate bobbin_bits;
-extern crate cast;
-extern crate cortex_m;
-extern crate embedded_hal as hal;
-extern crate nb;
-pub extern crate stm32f30x;
-extern crate void;
+pub use stm32f30x;
 
 pub mod bb;
 pub mod delay;
