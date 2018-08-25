@@ -60,6 +60,7 @@ pub struct Tx<USART> {
 pub trait SerialExt<USART, ITX, IRX, TX, RX> {
     /// Configures USART and consumes pair of (tx, rx) pins
     /// to act as serial port.
+    /// Configures pins accordingly.
     /// Returns [`Serial`].
     ///
     /// [`Serial`]: ./struct.Serial.html
@@ -124,6 +125,15 @@ macro_rules! serial {
                                   -> Serial<$USARTX, ($txpin<PT, AltFn<$afn, PushPull, $speed>>,
                                                       $rxpin<PT, AltFn<$afn, PushPull, $speed>>)>
                         {
+                            let outpins = (
+                                pins.0
+                                    .alternating($afn)
+                                    .output_speed($speed),
+                                pins.1
+                                    .alternating($afn)
+                                    .output_speed($speed),
+                            );
+
                             // enable or reset $USARTX
                             let apbenr = unsafe { &(*RCC::ptr()).$apbenr };
                             let apbrstr = unsafe { &(*RCC::ptr()).$apbrstr };
@@ -149,15 +159,6 @@ macro_rules! serial {
                                     .te()
                                     .set_bit()
                             });
-
-                            let outpins = (
-                                pins.0
-                                    .alternating($afn)
-                                    .output_speed($speed),
-                                pins.1
-                                    .alternating($afn)
-                                    .output_speed($speed),
-                            );
 
                             Serial { usart: self,
                                      pins: outpins, }
