@@ -2,6 +2,7 @@
 authors = ["Roma Sokolov", "Alexander Zhuravlev", "Jorge Aparicio <jorge@japaric.io>"]
 categories = ["embedded", "hardware-support", "no-std"]
 description = "Alternative HAL impl for the STM32F30x family of microcontrollers"
+readme = "Readme.md"
 keywords = ["arm", "cortex-m", "stm32", "hal"]
 license = "MIT OR Apache-2.0"
 name = "alt-stm32f30x-hal"
