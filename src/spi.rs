@@ -284,16 +284,6 @@ macro_rules! spi {
     };
 }
 
-// spi!(SPI1,
-//      apb2enr,
-//      apb2rstr,
-//      spi1en,
-//      spi1rst,
-//      pclk2,
-//      AF5,
-//      HighSpeed,
-//      [(PA5, [(PA6, [PA7, PB5,]), (PB4, [PA7, PB5,]),]),]);
-
 spi!(SPI1,
      apb2enr,
      apb2rstr,
