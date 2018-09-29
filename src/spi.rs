@@ -59,9 +59,9 @@ macro_rules! spi {
      $pclkX:ident,
      $afn:ident,
      $speed:ident,
-     [$($sck: ident, )+],
-     $miso: tt,
-     $mosi: tt
+     sck: [$($sck: ident, )+],
+     miso: $miso: tt,
+     mosi: $mosi: tt
     ) => {
         spi!{
             $SPIX,
@@ -292,9 +292,9 @@ spi!(SPI1,
      pclk2,
      AF5,
      HighSpeed,
-     [PA5, PB3,],
-     [PA6, PB4,],
-     [PA7, PB5,]);
+     sck: [PA5, PB3,],
+     miso: [PA6, PB4,],
+     mosi: [PA7, PB5,]);
 
 spi!(SPI2,
      apb1enr,
@@ -304,9 +304,9 @@ spi!(SPI2,
      pclk1,
      AF5,
      HighSpeed,
-     [PB13,],
-     [PB14,],
-     [PB15,]);
+     sck: [PB13,],
+     miso: [PB14,],
+     mosi: [PB15,]);
 spi!(SPI3,
      apb1enr,
      apb1rstr,
@@ -315,6 +315,6 @@ spi!(SPI3,
      pclk1,
      AF6,
      HighSpeed,
-     [PB3, PC10,],
-     [PB4, PC11,],
-     [PB5, PC12,]);
+     sck: [PB3, PC10,],
+     miso: [PB4, PC11,],
+     mosi: [PB5, PC12,]);
