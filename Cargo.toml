@@ -10,7 +10,7 @@ repository = "https://github.com/copterust/alt-stm32f30x-hal"
 version = "0.9.2-alpha.0"
 
 [dependencies]
-cortex-m = "0.5.7"
+cortex-m = "0.5.8"
 nb = "0.1.0"
 stm32f30x = "0.7.1"
 bobbin-bits = "0.1.1"
