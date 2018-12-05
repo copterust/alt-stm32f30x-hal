@@ -118,6 +118,10 @@ pwm!(bind_pa2_tim2_ch3, PA2, (tim2, CH3, true), (AF1, PushPull));
 
 pwm!(bind_pa3_tim2_ch4, PA3, (tim2, CH4, true), (AF1, PushPull));
 
+pwm!(bind_pa6_tim3_ch1, PA6, (tim3, CH1, true), (AF2, PushPull));
+
+pwm!(bind_pa7_tim3_ch2, PA7, (tim3, CH2, true), (AF2, PushPull));
+
 pwm!(bind_pc6_tim3_ch1, PC6, (tim3, CH1, true), (AF2, PushPull));
 
 pwm!(bind_pc7_tim3_ch1, PC7, (tim3, CH2, true), (AF2, PushPull));
