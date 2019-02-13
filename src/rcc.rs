@@ -23,7 +23,7 @@ impl RccExt for RCC {
               cfgr: CFGR { hclk: None,
                            pclk1: None,
                            pclk2: None,
-                           sysclk: None, }, }
+                           sysclk: None } }
     }
 }
 
@@ -76,6 +76,14 @@ impl APB1 {
 /// Advanced Peripheral Bus 2 (APB2) registers
 pub struct APB2 {
     _0: (),
+}
+
+impl APB2 {
+    /// enr
+    pub fn enr(&mut self) -> &rcc::APB2ENR {
+        // NOTE(unsafe) this proxy grants exclusive access to this register
+        unsafe { &(*RCC::ptr()).apb2enr }
+    }
 }
 
 const HSI: u32 = 8_000_000; // Hz
@@ -137,17 +145,17 @@ impl CFGR {
 
         let hpre_bits = self.hclk
                             .map(|hclk| match sysclk / hclk {
-                                     0 => unreachable!(),
-                                     1 => 0b0111,
-                                     2 => 0b1000,
-                                     3...5 => 0b1001,
-                                     6...11 => 0b1010,
-                                     12...39 => 0b1011,
-                                     40...95 => 0b1100,
-                                     96...191 => 0b1101,
-                                     192...383 => 0b1110,
-                                     _ => 0b1111,
-                                 })
+                                0 => unreachable!(),
+                                1 => 0b0111,
+                                2 => 0b1000,
+                                3...5 => 0b1001,
+                                6...11 => 0b1010,
+                                12...39 => 0b1011,
+                                40...95 => 0b1100,
+                                96...191 => 0b1101,
+                                192...383 => 0b1110,
+                                _ => 0b1111,
+                            })
                             .unwrap_or(0b0111);
 
         let hclk = sysclk / (1 << (hpre_bits - 0b0111));
@@ -156,13 +164,13 @@ impl CFGR {
 
         let ppre1_bits = self.pclk1
                              .map(|pclk1| match hclk / pclk1 {
-                                      0 => unreachable!(),
-                                      1 => 0b011,
-                                      2 => 0b100,
-                                      3...5 => 0b101,
-                                      6...11 => 0b110,
-                                      _ => 0b111,
-                                  })
+                                 0 => unreachable!(),
+                                 1 => 0b011,
+                                 2 => 0b100,
+                                 3...5 => 0b101,
+                                 6...11 => 0b110,
+                                 _ => 0b111,
+                             })
                              .unwrap_or(0b011);
 
         let ppre1 = 1 << (ppre1_bits - 0b011);
@@ -172,13 +180,13 @@ impl CFGR {
 
         let ppre2_bits = self.pclk2
                              .map(|pclk2| match hclk / pclk2 {
-                                      0 => unreachable!(),
-                                      1 => 0b011,
-                                      2 => 0b100,
-                                      3...5 => 0b101,
-                                      6...11 => 0b110,
-                                      _ => 0b111,
-                                  })
+                                 0 => unreachable!(),
+                                 1 => 0b011,
+                                 2 => 0b100,
+                                 3...5 => 0b101,
+                                 6...11 => 0b110,
+                                 _ => 0b111,
+                             })
                              .unwrap_or(0b011);
 
         let ppre2 = 1 << (ppre2_bits - 0b011);
@@ -189,15 +197,14 @@ impl CFGR {
         // adjust flash wait states
         unsafe {
             acr.acr().write(|w| {
-                                w.latency().bits(if sysclk <= 24_000_000 {
-                                                     0b000
-                                                 } else if sysclk <= 48_000_000
-                                                 {
-                                                     0b001
-                                                 } else {
-                                                     0b010
-                                                 })
-                            })
+                         w.latency().bits(if sysclk <= 24_000_000 {
+                                              0b000
+                                          } else if sysclk <= 48_000_000 {
+                                              0b001
+                                          } else {
+                                              0b010
+                                          })
+                     })
         }
 
         let rcc = unsafe { &*RCC::ptr() };
@@ -212,29 +219,29 @@ impl CFGR {
 
             // SW: PLL selected as system clock
             rcc.cfgr.modify(|_, w| unsafe {
-                                w.ppre2()
-                                 .bits(ppre2_bits)
-                                 .ppre1()
-                                 .bits(ppre1_bits)
-                                 .hpre()
-                                 .bits(hpre_bits)
-                                 .sw()
-                                 .bits(0b10)
-                            });
+                        w.ppre2()
+                         .bits(ppre2_bits)
+                         .ppre1()
+                         .bits(ppre1_bits)
+                         .hpre()
+                         .bits(hpre_bits)
+                         .sw()
+                         .bits(0b10)
+                    });
         } else {
             // use HSI as source
 
             // SW: HSI selected as system clock
             rcc.cfgr.write(|w| unsafe {
-                               w.ppre2()
-                                .bits(ppre2_bits)
-                                .ppre1()
-                                .bits(ppre1_bits)
-                                .hpre()
-                                .bits(hpre_bits)
-                                .sw()
-                                .bits(0b00)
-                           });
+                        w.ppre2()
+                         .bits(ppre2_bits)
+                         .ppre1()
+                         .bits(ppre1_bits)
+                         .hpre()
+                         .bits(hpre_bits)
+                         .sw()
+                         .bits(0b00)
+                    });
         }
 
         Clocks { hclk: Hertz(hclk),
@@ -242,7 +249,7 @@ impl CFGR {
                  pclk2: Hertz(pclk2),
                  ppre1,
                  ppre2,
-                 sysclk: Hertz(sysclk), }
+                 sysclk: Hertz(sysclk) }
     }
 }
 
