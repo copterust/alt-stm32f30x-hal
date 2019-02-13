@@ -16,10 +16,9 @@ bobbin-bits = "0.1.1"
 
 [dependencies.stm32f30x]
 version = "0.8.0"
-features = [ "rt" ]
 
 [dependencies.embedded-hal]
-version = "0.2.1"
+version = "0.2.2"
 features = ["unproven"]
 
 [dependencies.void]
