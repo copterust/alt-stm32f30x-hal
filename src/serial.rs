@@ -242,10 +242,13 @@ macro_rules! serial {
                 Err(if isr.pe().bit_is_set() {
                     nb::Error::Other(Error::Parity)
                 } else if isr.fe().bit_is_set() {
+                    self.clear_framing_error();
                     nb::Error::Other(Error::Framing)
                 } else if isr.nf().bit_is_set() {
+                    self.clear_noise_error();
                     nb::Error::Other(Error::Noise)
                 } else if isr.ore().bit_is_set() {
+                    self.clear_overrun_error();
                     nb::Error::Other(Error::Overrun)
                 } else if isr.rxne().bit_is_set() {
                     // NOTE(read_volatile) see `write_volatile` below
