@@ -63,7 +63,7 @@ pub mod syst {
             syst.set_clock_source(SystClkSource::Core);
             let mut timer = Timer { tim: syst,
                                     clocks,
-                                    timeout: Hertz(0), };
+                                    timeout: Hertz(0) };
             timer.reset(timeout);
             timer
         }

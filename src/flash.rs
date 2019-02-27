@@ -11,7 +11,7 @@ pub trait FlashExt {
 
 impl FlashExt for FLASH {
     fn constrain(self) -> Parts {
-        Parts { acr: ACR { _0: () }, }
+        Parts { acr: ACR { _0: () } }
     }
 }
 

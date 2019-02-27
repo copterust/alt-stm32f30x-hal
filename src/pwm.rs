@@ -91,7 +91,7 @@ macro_rules! pwm {
                 channel.preload($CHPE);
                 PwmBinding { pin,
                              channel,
-                             _af: PhantomData, }
+                             _af: PhantomData }
             }
         }
 
