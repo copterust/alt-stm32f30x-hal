@@ -39,6 +39,7 @@ extern crate void;
 
 pub mod bb;
 pub mod delay;
+pub mod dma;
 pub mod flash;
 pub mod gpio;
 pub mod i2c;
