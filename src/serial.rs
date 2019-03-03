@@ -312,7 +312,7 @@ macro_rules! serial {
                             w.ma().bits(buffer.as_ptr() as usize as u32)
                         });
                         chan.cndtr().write(|w| unsafe{
-                            w.ndt().bits((buffer.len() * 2) as u16
+                            w.ndt().bits((buffer.len() * 2) as u16)
                         });
                         chan.cpar().write(|w| unsafe {
                             w.pa().bits(&(*$USARTX::ptr()).rdr as *const _ as usize as u32)
@@ -323,28 +323,27 @@ macro_rules! serial {
                         // the next statement, which starts the DMA transfer
                         atomic::compiler_fence(Ordering::SeqCst);
 
-                                           unsafe {
-                        chan.ccr().modify(|_, w| {
-                            w.mem2mem()
-                                .clear_bit()
-                                .pl()
-                                .bits(0b01)
-                                .msize()
-                                .bits(0b0) // 8 bit
-                                .psize()
-                                .bits(0b0)
-                                .minc()
-                                .set_bit()
-                                .pinc()
-                                .clear_bit()
-                                .circ()
-                                .set_bit()
-                                .dir()
-                                .clear_bit()
-                                .en()
-                                .set_bit()
-                        });
-                                           }
+                        unsafe {
+                            chan.ccr().modify(|_, w| {
+                                w.mem2mem()
+                                    .clear_bit()
+                                    .pl()
+                                    .bits(0b01)
+                                    .msize()
+                                    .bits(0b0) // 8 bit
+                                    .psize()
+                                    .bits(0b0)
+                                    .minc()
+                                    .set_bit()
+                                    .pinc()
+                                    .clear_bit()
+                                    .circ()
+                                    .set_bit()
+                                    .dir()
+                                    .clear_bit()
+                            });
+                            chan.ccr().modify(|_, w| w.en().set_bit() )
+                        }
                     }
 
                     CircBuffer::new(buffer, chan)
