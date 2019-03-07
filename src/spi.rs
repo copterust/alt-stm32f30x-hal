@@ -46,7 +46,7 @@ pub trait SpiExt<SPI, ISCK, IMISO, IMOSI, SCK, MISO, MOSI> {
               freq: F,
               clocks: Clocks)
               -> Spi<SPI, (SCK, MISO, MOSI)>
-        where F: Into<Hertz>;
+        where F: Into<Hertz<u32>>;
 }
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -142,7 +142,7 @@ macro_rules! spi {
                         ($sck<PT, AltFn<$afn, PushPull, $speed>>,
                          $miso<PT, AltFn<$afn, PushPull, $speed>>,
                          $mosi<PT, AltFn<$afn, PushPull, $speed>>)>
-                        where F: Into<Hertz>
+                        where F: Into<Hertz<u32>>
                         {
                             let outpins = (pins.0.alternating($afn).output_speed($speed),
                                            pins.1.alternating($afn).output_speed($speed),

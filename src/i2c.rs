@@ -45,7 +45,7 @@ pub trait I2cExt<I2C, ISCL, ISDA, SCL, SDA> {
               freq: F,
               clocks: Clocks)
               -> I2c<I2C, (SCL, SDA)>
-        where F: Into<Hertz>;
+        where F: Into<Hertz<u32>>;
 }
 
 macro_rules! busy_wait {
@@ -110,7 +110,7 @@ macro_rules! i2c {
                         -> I2c<$I2CX,
                     ($scl<PT, AltFn<$afn, PushPull, $speed>>,
                      $sda<PT, AltFn<$afn, PushPull, $speed>>)> where
-                        F: Into<Hertz>,
+                        F: Into<Hertz<u32>>,
                     {
                         let outpins = (pins.0.alternating($afn).output_speed($speed),
                                        pins.1.alternating($afn).output_speed($speed));

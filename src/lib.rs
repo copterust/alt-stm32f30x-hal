@@ -29,6 +29,7 @@
 #![deny(warnings)]
 #![no_std]
 
+extern crate bitrate;
 extern crate bobbin_bits;
 extern crate cast;
 extern crate cortex_m;

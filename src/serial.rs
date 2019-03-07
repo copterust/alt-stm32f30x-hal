@@ -69,7 +69,7 @@ pub trait SerialExt<USART, ITX, IRX, TX, RX> {
     /// [`Serial`]: ./struct.Serial.html
     fn serial(self,
               pins: (ITX, IRX),
-              baud_rate: Bps,
+              baud_rate: Bps<u32>,
               clocks: Clocks)
               -> Serial<USART, (TX, RX)>;
 }
@@ -123,7 +123,7 @@ macro_rules! serial {
                     for $USARTX {
                         fn serial(self,
                                   pins: ($txpin<PT, PM>, $rxpin<PT, PM>),
-                                  baud_rate: Bps,
+                                  baud_rate: Bps<u32>,
                                   clocks: Clocks)
                                   -> Serial<$USARTX, ($txpin<PT, AltFn<$afn, PushPull, $speed>>,
                                                       $rxpin<PT, AltFn<$afn, PushPull, $speed>>)>

@@ -52,13 +52,13 @@ pub mod syst {
     pub struct Timer {
         clocks: Clocks,
         tim: SYST,
-        timeout: Hertz,
+        timeout: Hertz<u32>,
     }
 
     impl Timer {
         /// System timer
         pub fn new<T>(mut syst: SYST, timeout: T, clocks: Clocks) -> Self
-            where T: Into<Hertz>
+            where T: Into<Hertz<u32>>
         {
             syst.set_clock_source(SystClkSource::Core);
             let mut timer = Timer { tim: syst,
@@ -69,7 +69,7 @@ pub mod syst {
         }
 
         /// Resets timeout
-        pub fn reset<T: Into<Hertz>>(&mut self, timeout: T) {
+        pub fn reset<T: Into<Hertz<u32>>>(&mut self, timeout: T) {
             self.timeout = timeout.into();
             let rvr = self.clocks.sysclk().0 / self.timeout.0 - 1;
 
@@ -95,7 +95,7 @@ pub mod syst {
     }
 
     impl CountDown for Timer {
-        type Time = Hertz;
+        type Time = Hertz<u32>;
 
         fn start<T>(&mut self, timeout: T)
             where T: Into<Self::Time>
@@ -270,7 +270,6 @@ macro_rules! tim {
             use core::marker::PhantomData;
             use rcc;
             use rcc::Clocks;
-            use time::Hertz;
 
             /// Timer channel
             pub struct Channel<CN: ChNum, M: ChMode> {
@@ -381,7 +380,7 @@ macro_rules! tim {
             pub struct Timer<C1: ChState, C2: ChState, C3: ChState, C4: ChState> {
                 clocks: Clocks,
                 tim: $TIMSRC,
-                timeout: Hertz,
+                timeout: Hertz<u32>,
                 _c1: PhantomData<C1>,
                 _c2: PhantomData<C2>,
                 _c3: PhantomData<C3>,
@@ -397,7 +396,7 @@ macro_rules! tim {
                     apb: &mut rcc::$apb,
                 ) -> Timer<ChannelFree, ChannelFree, ChannelFree, ChannelFree>
                 where
-                    T: Into<Hertz>,
+                    T: Into<Hertz<u32>>,
                 {
                     // enable and reset peripheral to a clean slate state
                     apb.enr().modify(|_, w| w.$timXen().enabled());
@@ -434,7 +433,7 @@ macro_rules! tim {
                 /// Stop timer and reset frequency (doesn't start/enable)
                 pub fn reset<T>(&mut self, timeout: T)
                 where
-                    T: Into<Hertz>,
+                    T: Into<Hertz<u32>>,
                 {
                     self.tim.cr1.modify(|_, w| w.cen().clear_bit());
                     // restart counter
@@ -484,11 +483,11 @@ macro_rules! tim {
             impl<C1: ChState, C2: ChState, C3: ChState, C4: ChState> CountDown
                 for Timer<C1, C2, C3, C4>
             {
-                type Time = Hertz;
+                type Time = Hertz<u32>;
 
                 fn start<T>(&mut self, timeout: T)
                 where
-                    T: Into<Hertz>,
+                    T: Into<Hertz<u32>>,
                 {
                     self.reset(timeout);
                     self.enable();

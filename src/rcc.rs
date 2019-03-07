@@ -162,7 +162,7 @@ impl CFGR {
                   divider: HseDivider,
                   bypass: HseBypass)
                   -> Self
-        where F: Into<Hertz>
+        where F: Into<Hertz<u32>>
     {
         self.hse = Some(HseConfig { speed: freq.into().0,
                                     divider: match divider {
@@ -193,7 +193,7 @@ impl CFGR {
 
     /// Sets a frequency for the AHB bus
     pub fn hclk<F>(mut self, freq: F) -> Self
-        where F: Into<Hertz>
+        where F: Into<Hertz<u32>>
     {
         self.hclk = Some(freq.into().0);
         self
@@ -201,7 +201,7 @@ impl CFGR {
 
     /// Sets a frequency for the APB1 bus
     pub fn pclk1<F>(mut self, freq: F) -> Self
-        where F: Into<Hertz>
+        where F: Into<Hertz<u32>>
     {
         self.pclk1 = Some(freq.into().0);
         self
@@ -209,7 +209,7 @@ impl CFGR {
 
     /// Sets a frequency for the APB2 bus
     pub fn pclk2<F>(mut self, freq: F) -> Self
-        where F: Into<Hertz>
+        where F: Into<Hertz<u32>>
     {
         self.pclk2 = Some(freq.into().0);
         self
@@ -217,7 +217,7 @@ impl CFGR {
 
     /// Sets the system (core) frequency
     pub fn sysclk<F>(mut self, freq: F) -> Self
-        where F: Into<Hertz>
+        where F: Into<Hertz<u32>>
     {
         self.sysclk = Some(freq.into().0);
         self
@@ -409,29 +409,29 @@ impl CFGR {
 /// longer be changed
 #[derive(Clone, Copy)]
 pub struct Clocks {
-    hclk: Hertz,
-    pclk1: Hertz,
-    pclk2: Hertz,
+    hclk: Hertz<u32>,
+    pclk1: Hertz<u32>,
+    pclk2: Hertz<u32>,
     ppre1: u8,
     // TODO remove `allow`
     #[allow(dead_code)]
     ppre2: u8,
-    sysclk: Hertz,
+    sysclk: Hertz<u32>,
 }
 
 impl Clocks {
     /// Returns the frequency of the AHB
-    pub fn hclk(&self) -> Hertz {
+    pub fn hclk(&self) -> Hertz<u32> {
         self.hclk
     }
 
     /// Returns the frequency of the APB1
-    pub fn pclk1(&self) -> Hertz {
+    pub fn pclk1(&self) -> Hertz<u32> {
         self.pclk1
     }
 
     /// Returns the frequency of the APB2
-    pub fn pclk2(&self) -> Hertz {
+    pub fn pclk2(&self) -> Hertz<u32> {
         self.pclk2
     }
 
@@ -446,7 +446,7 @@ impl Clocks {
     }
 
     /// Returns the system (core) frequency
-    pub fn sysclk(&self) -> Hertz {
+    pub fn sysclk(&self) -> Hertz<u32> {
         self.sysclk
     }
 }
