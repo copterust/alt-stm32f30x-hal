@@ -10,8 +10,8 @@ use nb;
 use stm32f30x::{TIM2, TIM3, TIM4};
 use void::Void;
 
-use rcc::Clocks;
-use time::Hertz;
+use crate::rcc::Clocks;
+use crate::time::Hertz;
 
 #[doc(hidden)]
 mod private {
@@ -268,8 +268,8 @@ macro_rules! tim {
         pub mod $timmod {
             use super::*;
             use core::marker::PhantomData;
-            use rcc;
-            use rcc::Clocks;
+            use crate::rcc;
+            use crate::rcc::Clocks;
 
             /// Timer channel
             pub struct Channel<CN: ChNum, M: ChMode> {

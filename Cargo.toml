@@ -8,6 +8,7 @@ license = "MIT OR Apache-2.0"
 name = "alt-stm32f30x-hal"
 repository = "https://github.com/copterust/alt-stm32f30x-hal"
 version = "0.13.1-alpha.0"
+edition = "2018"
 
 [dependencies]
 cortex-m = "0.5.8"
@@ -18,9 +19,10 @@ bitrate = "0.1.1"
 [dependencies.stm32f30x]
 version = "0.8.0"
 
-[dependencies.embedded-hal]
-version = "0.2.2"
+[dependencies.hal]
 features = ["unproven"]
+version = "0.2.2"
+package = "embedded-hal"
 
 [dependencies.void]
 default-features = false

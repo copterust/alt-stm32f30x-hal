@@ -4,11 +4,11 @@
 // should be Cargo features that let you select different microcontroller
 // packages
 
+use crate::rcc::AHB;
 use bobbin_bits::*;
 use core::intrinsics::transmute;
 use core::marker::PhantomData;
 use hal::digital::{toggleable, InputPin, OutputPin, StatefulOutputPin};
-use rcc::AHB;
 
 /// Marker trait for any pin
 pub trait GPIOPin {}

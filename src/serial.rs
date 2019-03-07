@@ -9,16 +9,15 @@ use nb;
 use stm32f30x::{Interrupt, RCC, USART1, USART2, USART3};
 use void::Void;
 
-// use crate::afio::MAPR;
 use crate::dma::{dma1, CircBuffer, Static, Transfer, R, W};
-use gpio::{AltFn, HighSpeed, PinMode, PullType, PushPull, AF7};
-use gpio::{PA10, PA14, PA15, PA2, PA3, PA9};
-use gpio::{PB10, PB11, PB3, PB4, PB6, PB7};
-use gpio::{PC10, PC11, PC4, PC5};
-use gpio::{PD5, PD6, PD8, PD9};
-use gpio::{PE0, PE1, PE15};
-use rcc::Clocks;
-use time::Bps;
+use crate::gpio::{AltFn, HighSpeed, PinMode, PullType, PushPull, AF7};
+use crate::gpio::{PA10, PA14, PA15, PA2, PA3, PA9};
+use crate::gpio::{PB10, PB11, PB3, PB4, PB6, PB7};
+use crate::gpio::{PC10, PC11, PC4, PC5};
+use crate::gpio::{PD5, PD6, PD8, PD9};
+use crate::gpio::{PE0, PE1, PE15};
+use crate::rcc::Clocks;
+use crate::time::Bps;
 
 /// Interrupt event
 pub enum Event {

@@ -3,8 +3,8 @@
 use cortex_m::peripheral::DCB;
 use cortex_m::peripheral::DWT;
 
+use crate::rcc::Clocks;
 pub use bitrate::*;
-use rcc::Clocks;
 
 /// A monotonic nondecreasing timer
 #[derive(Clone, Copy)]

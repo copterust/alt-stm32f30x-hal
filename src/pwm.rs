@@ -1,9 +1,9 @@
 //! Pwm
 
+use crate::gpio;
+use crate::timer;
 use core::marker::PhantomData;
-use gpio;
 use hal;
-use timer;
 
 /// pwm
 pub struct PwmBinding<P: gpio::GPIOPin,

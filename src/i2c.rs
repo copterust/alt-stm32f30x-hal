@@ -3,14 +3,14 @@
 use cast::u8;
 use stm32f30x::{I2C1, I2C2, RCC};
 
-use gpio::{AltFn, PinMode, PullType};
-use gpio::{HighSpeed, PushPull, AF4};
-use gpio::{PA10, PA14, PA15, PA9};
-use gpio::{PB6, PB7, PB8, PB9};
-use gpio::{PF0, PF1, PF6};
+use crate::gpio::{AltFn, PinMode, PullType};
+use crate::gpio::{HighSpeed, PushPull, AF4};
+use crate::gpio::{PA10, PA14, PA15, PA9};
+use crate::gpio::{PB6, PB7, PB8, PB9};
+use crate::gpio::{PF0, PF1, PF6};
+use crate::rcc::Clocks;
+use crate::time::Hertz;
 use hal::blocking::i2c::{Read, Write, WriteRead};
-use rcc::Clocks;
-use time::Hertz;
 
 /// I2C error
 #[derive(Debug)]
