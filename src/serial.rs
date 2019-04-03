@@ -4,7 +4,7 @@ use core::marker::PhantomData;
 use core::ptr;
 use core::sync::atomic::{self, Ordering};
 
-use hal::serial;
+use hal::serial::{self, Write};
 use nb;
 use stm32f30x::{Interrupt, RCC, USART1, USART2, USART3};
 use void::Void;
@@ -298,6 +298,31 @@ macro_rules! serial {
                 } else {
                     Err(nb::Error::WouldBlock)
                 }
+            }
+        }
+
+        impl core::fmt::Write for Tx<$USARTX>
+        {
+            fn write_str(&mut self, s: &str) -> core::fmt::Result {
+                for c in s.chars() {
+                    match self.write_char(c) {
+                        Ok(_) => {},
+                        Err(_) => {},
+                    }
+                }
+                match self.flush() {
+                    Ok(_) => {},
+                    Err(_) => {},
+                };
+                Ok(())
+            }
+
+            fn write_char(&mut self, s: char) -> core::fmt::Result {
+                match nb::block!(self.write(s as u8)) {
+                    Ok(_) => {},
+                    Err(_) => {},
+                }
+                Ok(())
             }
         }
 
