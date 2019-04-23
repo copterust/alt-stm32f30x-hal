@@ -392,12 +392,11 @@ macro_rules! tim {
                 pub fn new<T>(
                     tim: $TIMSRC,
                     timeout: T,
-                    clocks: Clocks,
-                    apb: &mut rcc::$apb,
-                ) -> Timer<ChannelFree, ChannelFree, ChannelFree, ChannelFree>
+                    clocks: Clocks) -> Timer<ChannelFree, ChannelFree, ChannelFree, ChannelFree>
                 where
                     T: Into<Hertz<u32>>,
                 {
+                    let mut apb = rcc::$apb::internal_get();
                     // enable and reset peripheral to a clean slate state
                     apb.enr().modify(|_, w| w.$timXen().enabled());
                     apb.rstr().modify(|_, w| w.$timXrst().set_bit());
