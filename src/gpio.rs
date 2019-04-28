@@ -11,7 +11,12 @@ use core::marker::PhantomData;
 use hal::digital::{toggleable, InputPin, OutputPin, StatefulOutputPin};
 
 /// Marker trait for any pin
-pub trait GPIOPin {}
+pub trait GPIOPin {
+    /// Returns GPIO group
+    fn group(&self) -> Group;
+    /// Returns pin index within group
+    fn index(&self) -> u8;
+}
 
 /// Trait for pin mode
 pub trait PinMode {
@@ -303,7 +308,7 @@ pub trait GpioExt {
 }
 
 macro_rules! gpio {
-    ($GPIOX:ident, $Gpiox:ident, $gpiox:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
+    ($GPIOX:ident, $Gpiox:ident, $gpiox:ident, $iopxenr:ident, $iopxrst:ident, $group: ident, $PXx:ident, [
         $($PXi:ident: ($pxi:ident, $i:expr, $AFR:ident),)+
     ]) => {
         use stm32f30x::$GPIOX;
@@ -425,7 +430,13 @@ macro_rules! gpio {
             }
 
             impl <PT: PullType, PM: PinMode> GPIOPin for $PXi<PT, PM> {
+                fn group(&self) -> Group {
+                    Group::$group
+                }
 
+                fn index(&self) -> u8 {
+                    $i
+                }
             }
 
             impl<PT: PullType, PM: PinMode> $PXi<PT, PM> {
@@ -606,7 +617,25 @@ macro_rules! gpio {
     }
 }
 
-gpio!(GPIOA, Gpioa, gpioa, iopaen, ioparst, PAx, [
+/// GPIO pin group [A-F]
+pub enum Group {
+    /// GPIOA
+    A,
+    /// GPIOB
+    B,
+    /// GPIOC
+    C,
+    /// GPIOD
+    D,
+    /// GPIOE
+    E,
+    /// GPIOF
+    F,
+    /// GPIOG
+    G,
+}
+
+gpio!(GPIOA, Gpioa, gpioa, iopaen, ioparst, A, PAx, [
     PA0: (pa0, 0, afrl),
     PA1: (pa1, 1, afrl),
     PA2: (pa2, 2, afrl),
@@ -625,7 +654,7 @@ gpio!(GPIOA, Gpioa, gpioa, iopaen, ioparst, PAx, [
     PA15: (pa15, 15, afrh),
 ]);
 
-gpio!(GPIOB, Gpiob, gpiob, iopben, iopbrst, PBx, [
+gpio!(GPIOB, Gpiob, gpiob, iopben, iopbrst, B, PBx, [
     PB0: (pb0, 0, afrl),
     PB1: (pb1, 1, afrl),
     PB2: (pb2, 2, afrl),
@@ -644,7 +673,7 @@ gpio!(GPIOB, Gpiob, gpiob, iopben, iopbrst, PBx, [
     PB15: (pb15, 15, afrh),
 ]);
 
-gpio!(GPIOC, Gpioc, gpioc, iopcen, iopcrst, PCx, [
+gpio!(GPIOC, Gpioc, gpioc, iopcen, iopcrst, C, PCx, [
     PC0: (pc0, 0, afrl),
     PC1: (pc1, 1, afrl),
     PC2: (pc2, 2, afrl),
@@ -663,7 +692,7 @@ gpio!(GPIOC, Gpioc, gpioc, iopcen, iopcrst, PCx, [
     PC15: (pc15, 15, afrh),
 ]);
 
-gpio!(GPIOD, Gpiod, gpiod, iopden, iopdrst, PDx, [
+gpio!(GPIOD, Gpiod, gpiod, iopden, iopdrst, D, PDx, [
     PD0: (pd0, 0, afrl),
     PD1: (pd1, 1, afrl),
     PD2: (pd2, 2, afrl),
@@ -682,7 +711,7 @@ gpio!(GPIOD, Gpiod, gpiod, iopden, iopdrst, PDx, [
     PD15: (pd15, 15, afrh),
 ]);
 
-gpio!(GPIOE, Gpioe, gpioe, iopeen, ioperst, PEx, [
+gpio!(GPIOE, Gpioe, gpioe, iopeen, ioperst, E, PEx, [
     PE0: (pe0, 0, afrl),
     PE1: (pe1, 1, afrl),
     PE2: (pe2, 2, afrl),
@@ -701,7 +730,7 @@ gpio!(GPIOE, Gpioe, gpioe, iopeen, ioperst, PEx, [
     PE15: (pe15, 15, afrh),
 ]);
 
-gpio!(GPIOF, Gpiof, gpiof, iopfen, iopfrst, PFx, [
+gpio!(GPIOF, Gpiof, gpiof, iopfen, iopfrst, F, PFx, [
     PF0: (pf0, 0, afrl),
     PF1: (pf1, 1, afrl),
     PF2: (pf2, 2, afrl),

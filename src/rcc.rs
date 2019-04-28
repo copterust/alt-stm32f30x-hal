@@ -84,8 +84,7 @@ pub struct APB2 {
 }
 
 impl APB2 {
-    /// enr
-    pub fn enr(&mut self) -> &rcc::APB2ENR {
+    pub(crate) fn enr(&mut self) -> &rcc::APB2ENR {
         // NOTE(unsafe) this proxy grants exclusive access to this register
         unsafe { &(*RCC::ptr()).apb2enr }
     }
