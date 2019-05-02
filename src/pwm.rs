@@ -2,30 +2,23 @@
 
 use crate::gpio;
 use crate::timer;
-use core::marker::PhantomData;
 use hal;
 
 /// pwm
-pub struct PwmBinding<P: gpio::GPIOPin,
- C: timer::TimerChannel,
- AF: gpio::AltFnNum>
-{
+pub struct PwmBinding<P: gpio::GPIOPin, C: timer::TimerChannel> {
     pin: P,
     channel: C,
-    _af: PhantomData<AF>,
 }
 
-impl<P: gpio::GPIOPin, C: timer::TimerChannel, AF: gpio::AltFnNum>
-    PwmBinding<P, C, AF>
-{
+impl<P: gpio::GPIOPin, C: timer::TimerChannel> PwmBinding<P, C> {
     /// Consumes PwmBinding returning pin and channel
     pub fn release(self) -> (P, C) {
         (self.pin, self.channel)
     }
 }
 
-impl<P: gpio::GPIOPin, C: timer::TimerChannel, AF: gpio::AltFnNum> hal::PwmPin
-    for PwmBinding<P, C, AF>
+impl<P: gpio::GPIOPin, C: timer::TimerChannel> hal::PwmPin
+    for PwmBinding<P, C>
 {
     type Duty = u32;
     fn disable(&mut self) {
@@ -77,8 +70,7 @@ macro_rules! pwm {
                 gpio::$PIN<PT, gpio::AltFn<gpio::$AF, gpio::$PP, SP>>;
             type Output = PwmBinding<Self::OutputPin,
                                      timer::$TIM::Channel<timer::$CHN,
-                                                          timer::Pwm1>,
-                                     gpio::$AF>;
+                                                          timer::Pwm1>>;
             fn to_pwm(self,
                       channel: timer::$TIM::Channel<timer::$CHN, CM>,
                       sp: SP)
@@ -89,16 +81,13 @@ macro_rules! pwm {
                               .alt_fn(gpio::$AF);
                 let mut channel = channel.mode(timer::Pwm1);
                 channel.preload($CHPE);
-                PwmBinding { pin,
-                             channel,
-                             _af: PhantomData }
+                PwmBinding { pin, channel }
             }
         }
 
         impl<PT: gpio::PullType, PM: gpio::PinMode, CM: timer::ChMode>
             PwmBinding<gpio::$PIN<PT, PM>,
-                       timer::$TIM::Channel<timer::$CHN, CM>,
-                       gpio::$AF>
+                       timer::$TIM::Channel<timer::$CHN, CM>>
         {
             /// Modify channel's preload
             pub fn channel_preload(&mut self, enabled: bool) {
