@@ -17,8 +17,8 @@ use crate::time::Hertz;
 mod private {
     #[doc(hidden)]
     pub trait Sealed {}
-    impl Sealed for super::ChannelFree {}
-    impl Sealed for super::ChannelTaken {}
+    impl Sealed for super::PwmFree {}
+    impl Sealed for super::PwmTaken {}
     impl Sealed for super::CH1 {}
     impl Sealed for super::CH2 {}
     impl Sealed for super::CH3 {}
@@ -118,13 +118,13 @@ pub mod syst {
 }
 
 /// Trait for channel state
-pub trait ChState: private::Sealed {}
-/// Channel is free and not taken
-pub struct ChannelFree;
-impl ChState for ChannelFree {}
-/// Channel is taken
-pub struct ChannelTaken;
-impl ChState for ChannelTaken {}
+pub trait PwmState: private::Sealed {}
+/// PwmChannels are free and not taken
+pub struct PwmFree;
+impl PwmState for PwmFree {}
+/// PwmChannels are taken
+pub struct PwmTaken;
+impl PwmState for PwmTaken {}
 
 /// Channel mode
 pub trait ChMode {
@@ -267,9 +267,9 @@ macro_rules! tim {
         /// $TIMSRC impl
         pub mod $timmod {
             use super::*;
-            use core::marker::PhantomData;
             use crate::rcc;
             use crate::rcc::Clocks;
+            use core::marker::PhantomData;
 
             /// Timer channel
             pub struct Channel<CN: ChNum, M: ChMode> {
@@ -324,11 +324,10 @@ macro_rules! tim {
                     let ccer_value: u32 = if value { 1 } else { 0 };
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
                     tim.ccer.modify(|r, w| unsafe {
-                        w.bits(
-                            (r.bits() & !(ccer_mask << ccer_offset))
-                                | ((ccer_value & ccer_mask) << ccer_offset),
-                        )
-                    });
+                                w.bits((r.bits() & !(ccer_mask << ccer_offset))
+                                       | ((ccer_value & ccer_mask)
+                                          << ccer_offset))
+                            });
                 }
 
                 /// Change channel output mode
@@ -337,14 +336,22 @@ macro_rules! tim {
                     let mode_bits: u8 = nm.channel_mode().into();
                     unsafe {
                         match CN::channel_number() {
-                            U2::B00 => tim.ccmr1_output
-                                .modify(|_, w| w.oc1m().bits(mode_bits)),
-                            U2::B01 => tim.ccmr1_output
-                                .modify(|_, w| w.oc2m().bits(mode_bits)),
-                            U2::B10 => tim.ccmr2_output
-                                .modify(|_, w| w.oc3m().bits(mode_bits)),
-                            U2::B11 => tim.ccmr2_output
-                                .modify(|_, w| w.oc4m().bits(mode_bits)),
+                            U2::B00 => {
+                                tim.ccmr1_output
+                                   .modify(|_, w| w.oc1m().bits(mode_bits))
+                            }
+                            U2::B01 => {
+                                tim.ccmr1_output
+                                   .modify(|_, w| w.oc2m().bits(mode_bits))
+                            }
+                            U2::B10 => {
+                                tim.ccmr2_output
+                                   .modify(|_, w| w.oc3m().bits(mode_bits))
+                            }
+                            U2::B11 => {
+                                tim.ccmr2_output
+                                   .modify(|_, w| w.oc4m().bits(mode_bits))
+                            }
                         }
                     }
 
@@ -353,48 +360,46 @@ macro_rules! tim {
 
                 /// Set preload
                 pub fn preload(&mut self, value: bool) {
-                    let index:u32 = CN::channel_number().into();
+                    let index: u32 = CN::channel_number().into();
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
                     let mask = true;
                     if index < 2 {
                         let offset: u32 = 3 + (index * 4);
                         tim.ccmr1_output.modify(|r, w| unsafe {
-                            w.bits(
-                                (r.bits() & !((mask as u32) << offset))
-                                    | (((value & mask) as u32) << offset),
-                            )
-                        })
+                                            w.bits((r.bits()
+                                                    & !((mask as u32)
+                                                        << offset))
+                                                   | (((value & mask) as u32)
+                                                      << offset))
+                                        })
                     } else {
                         let offset: u32 = 3 + (index - 2) * 4;
                         tim.ccmr2_output.modify(|r, w| unsafe {
-                            w.bits(
-                                (r.bits() & !((mask as u32) << offset))
-                                    | (((value & mask) as u32) << offset),
-                            )
-                        })
+                                            w.bits((r.bits()
+                                                    & !((mask as u32)
+                                                        << offset))
+                                                   | (((value & mask) as u32)
+                                                      << offset))
+                                        })
                     };
                 }
             }
 
             /// Timer impl
-            pub struct Timer<C1: ChState, C2: ChState, C3: ChState, C4: ChState> {
+            pub struct Timer<PS: PwmState> {
                 clocks: Clocks,
                 tim: $TIMSRC,
                 timeout: Hertz<u32>,
-                _c1: PhantomData<C1>,
-                _c2: PhantomData<C2>,
-                _c3: PhantomData<C3>,
-                _c4: PhantomData<C4>,
+                _ps: PhantomData<PS>,
             }
 
-            impl Timer<ChannelFree, ChannelFree, ChannelFree, ChannelFree> {
-                /// Creates new channel
-                pub fn new<T>(
-                    tim: $TIMSRC,
-                    timeout: T,
-                    clocks: Clocks) -> Timer<ChannelFree, ChannelFree, ChannelFree, ChannelFree>
-                where
-                    T: Into<Hertz<u32>>,
+            impl Timer<PwmFree> {
+                /// Creates new timer
+                pub fn new<T>(tim: $TIMSRC,
+                              timeout: T,
+                              clocks: Clocks)
+                              -> Timer<PwmFree>
+                    where T: Into<Hertz<u32>>
                 {
                     let mut apb = rcc::$apb::internal_get();
                     // enable and reset peripheral to a clean slate state
@@ -402,15 +407,10 @@ macro_rules! tim {
                     apb.rstr().modify(|_, w| w.$timXrst().set_bit());
                     apb.rstr().modify(|_, w| w.$timXrst().clear_bit());
 
-                    let mut t = Timer {
-                        clocks,
-                        tim,
-                        timeout: Hertz(0),
-                        _c1: PhantomData,
-                        _c2: PhantomData,
-                        _c3: PhantomData,
-                        _c4: PhantomData,
-                    };
+                    let mut t = Timer { clocks,
+                                        tim,
+                                        timeout: Hertz(0),
+                                        _ps: PhantomData };
                     t.reset(timeout);
 
                     t
@@ -428,11 +428,10 @@ macro_rules! tim {
                 }
             }
 
-            impl<C1: ChState, C2: ChState, C3: ChState, C4: ChState> Timer<C1, C2, C3, C4> {
+            impl<PS: PwmState> Timer<PS> {
                 /// Stop timer and reset frequency (doesn't start/enable)
                 pub fn reset<T>(&mut self, timeout: T)
-                where
-                    T: Into<Hertz<u32>>,
+                    where T: Into<Hertz<u32>>
                 {
                     self.tim.cr1.modify(|_, w| w.cen().clear_bit());
                     // restart counter
@@ -475,18 +474,13 @@ macro_rules! tim {
                 }
             }
 
-            impl<C1: ChState, C2: ChState, C3: ChState, C4: ChState> Periodic
-                for Timer<C1, C2, C3, C4>
-            {}
+            impl<PS: PwmState> Periodic for Timer<PS> {}
 
-            impl<C1: ChState, C2: ChState, C3: ChState, C4: ChState> CountDown
-                for Timer<C1, C2, C3, C4>
-            {
+            impl<PS: PwmState> CountDown for Timer<PS> {
                 type Time = Hertz<u32>;
 
                 fn start<T>(&mut self, timeout: T)
-                where
-                    T: Into<Hertz<u32>>,
+                    where T: Into<Hertz<u32>>
                 {
                     self.reset(timeout);
                     self.enable();
@@ -502,105 +496,49 @@ macro_rules! tim {
                 }
             }
 
-            impl Timer<ChannelFree, ChannelFree, ChannelFree, ChannelFree> {
-                /// Get all channels
-                pub fn take_all(self) -> (Channel<CH1, Inactive>,
+            impl Timer<PwmFree> {
+                /// Consumes timer and returns pwm channels and timer without
+                /// them.
+                pub fn use_pwm(self) -> ((Channel<CH1, Inactive>,
                                           Channel<CH2, Inactive>,
                                           Channel<CH3, Inactive>,
-                                          Channel<CH4, Inactive>,
-                                          Timer<ChannelTaken, ChannelTaken, ChannelTaken, ChannelTaken>) {
-                    let (ch1, t) = self.take_ch1();
-                    let (ch2, t) = t.take_ch2();
-                    let (ch3, t) = t.take_ch3();
-                    let (ch4, t) = t.take_ch4();
-                    (ch1, ch2, ch3, ch4, t)
+                                          Channel<CH4, Inactive>),
+                                         Timer<PwmTaken>) {
+                    let ch1: Channel<CH1, Inactive> =
+                        Channel { _index: PhantomData,
+                                  _mode: PhantomData };
+                    let ch2: Channel<CH2, Inactive> =
+                        Channel { _index: PhantomData,
+                                  _mode: PhantomData };
+                    let ch3: Channel<CH3, Inactive> =
+                        Channel { _index: PhantomData,
+                                  _mode: PhantomData };
+                    let ch4: Channel<CH4, Inactive> =
+                        Channel { _index: PhantomData,
+                                  _mode: PhantomData };
+
+                    ((ch1, ch2, ch3, ch4), unsafe { transmute(self) })
                 }
             }
 
-
-            impl<C2: ChState, C3: ChState, C4: ChState> Timer<ChannelFree, C2, C3, C4> {
-                /// Get channel 1
-                pub fn take_ch1(self) -> (Channel<CH1, Inactive>, Timer<ChannelTaken, C2, C3, C4>) {
-                    let ch: Channel<CH1, Inactive> = Channel {
-                        _index: PhantomData,
-                        _mode: PhantomData,
-                    };
-                    (ch.mode(Inactive), unsafe { transmute(self) })
-                }
-            }
-
-            impl<C2: ChState, C3: ChState, C4: ChState> Timer<ChannelTaken, C2, C3, C4> {
-                /// Return channel 1 back
-                pub fn return_ch1<CM: ChMode>(
-                    self,
-                    _ch: Channel<CH1, CM>,
-                ) -> Timer<ChannelFree, C2, C3, C4> {
+            impl Timer<PwmTaken> {
+                /// Returns pwm channels back.
+                pub fn return_pwm<M1, M2, M3, M4>(self,
+                                                  _channels: (Channel<CH1, M1>,
+                                                              Channel<CH2, M2>,
+                                                              Channel<CH3, M3>,
+                                                              Channel<CH4, M4>))
+                                                  -> Timer<PwmFree>
+                where
+                    M1: ChMode,
+                    M2: ChMode,
+                    M3: ChMode,
+                    M4: ChMode
+                {
                     unsafe { transmute(self) }
                 }
             }
 
-            impl<C1: ChState, C3: ChState, C4: ChState> Timer<C1, ChannelFree, C3, C4> {
-                /// Take channel 2
-                pub fn take_ch2(self) -> (Channel<CH2, Inactive>, Timer<C1, ChannelTaken, C3, C4>) {
-                    let ch: Channel<CH2, Inactive> = Channel {
-                        _index: PhantomData,
-                        _mode: PhantomData,
-                    };
-                    (ch.mode(Inactive), unsafe { transmute(self) })
-                }
-            }
-
-            impl<C1: ChState, C3: ChState, C4: ChState> Timer<C1, ChannelTaken, C3, C4> {
-                /// Return channel 2 back
-                pub fn return_ch2<CM: ChMode>(
-                    self,
-                    _ch: Channel<CH2, CM>,
-                ) -> Timer<C1, ChannelFree, C3, C4> {
-                    unsafe { transmute(self) }
-                }
-            }
-
-            impl<C1: ChState, C2: ChState, C4: ChState> Timer<C1, C2, ChannelFree, C4> {
-                /// Take channel 3
-                pub fn take_ch3(self) -> (Channel<CH3, Inactive>, Timer<C1, C2, ChannelTaken, C4>) {
-                    let ch: Channel<CH3, Inactive> = Channel {
-                        _index: PhantomData,
-                        _mode: PhantomData,
-                    };
-                    (ch.mode(Inactive), unsafe { transmute(self) })
-                }
-            }
-
-            impl<C1: ChState, C2: ChState, C4: ChState> Timer<C1, C2, ChannelTaken, C4> {
-                /// Return channel 3 back
-                pub fn return_ch3<CM: ChMode>(
-                    self,
-                    _ch: Channel<CH3, CM>,
-                ) -> Timer<C1, C2, ChannelFree, C4> {
-                    unsafe { transmute(self) }
-                }
-            }
-
-            impl<C1: ChState, C2: ChState, C3: ChState> Timer<C1, C2, C3, ChannelFree> {
-                /// Take channel 4
-                pub fn take_ch4(self) -> (Channel<CH4, Inactive>, Timer<C1, C2, C3, ChannelTaken>) {
-                    let ch: Channel<CH4, Inactive> = Channel {
-                        _index: PhantomData,
-                        _mode: PhantomData,
-                    };
-                    (ch.mode(Inactive), unsafe { transmute(self) })
-                }
-            }
-
-            impl<C1: ChState, C2: ChState, C3: ChState> Timer<C1, C2, C3, ChannelTaken> {
-                /// Return channel back
-                pub fn return_ch4<CM: ChMode>(
-                    self,
-                    _ch: Channel<CH4, CM>,
-                ) -> Timer<C1, C2, C3, ChannelFree> {
-                    unsafe { transmute(self) }
-                }
-            }
         }
     };
 }
