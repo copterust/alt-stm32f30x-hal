@@ -14,7 +14,7 @@ edition = "2018"
 features = ["stm32f303", "rt"]
 
 [dependencies]
-cortex-m = "0.5.8"
+cortex-m = ">=0.5.8,<0.7"
 nb = "0.1.0"
 bobbin-bits = "0.1.1"
 bitrate = "0.1.1"
