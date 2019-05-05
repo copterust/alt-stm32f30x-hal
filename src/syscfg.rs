@@ -1,7 +1,7 @@
 //! SYSCFG Clock Configuration
 
 use crate::rcc;
-use stm32f30x::{self, SYSCFG};
+use crate::pac::{self, SYSCFG};
 
 /// Extension trait that constrains the `SYSCFG` peripheral
 pub trait SyscfgExt {
@@ -23,11 +23,11 @@ pub struct Syscfg {
 }
 
 impl Syscfg {
-    pub(crate) fn exticr1(&mut self) -> &stm32f30x::syscfg::EXTICR1 {
+    pub(crate) fn exticr1(&mut self) -> &pac::syscfg::EXTICR1 {
         unsafe { &(*SYSCFG::ptr()).exticr1 }
     }
 
-    pub(crate) fn exticr2(&mut self) -> &stm32f30x::syscfg::EXTICR2 {
+    pub(crate) fn exticr2(&mut self) -> &pac::syscfg::EXTICR2 {
         unsafe { &(*SYSCFG::ptr()).exticr2 }
     }
 }

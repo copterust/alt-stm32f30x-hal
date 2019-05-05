@@ -3,7 +3,7 @@
 use core::cmp;
 
 use cast::u32;
-use stm32f30x::{rcc, RCC};
+use crate::pac::{rcc, RCC};
 
 use crate::flash::ACR;
 use crate::time::Hertz;
@@ -336,9 +336,9 @@ impl CFGR {
             // WARNING! Bit 0 in cfgr2 is connected to bit 17 in cfgr (due to
             // MCU compatibility), if bit 0 is set here it must also
             // be set in any subsequent write to cfgr and vise-versa
-            rcc.cfgr2.write(|w| unsafe {
-                         w.prediv().bits(hse_cfg.divider as u8 - 1)
-                     });
+            rcc.cfgr2.write(|w|
+                w.prediv().bits(hse_cfg.divider as u8 - 1)
+            );
 
             while rcc.cr.read().hserdy().bit_is_clear() {}
         }
@@ -349,7 +349,7 @@ impl CFGR {
             if let Some(_) = &self.hse {
                 // HSE as PLL input
                 rcc.cfgr.modify(|_, w| unsafe {
-                            w.pllsrc().set_bit().pllmul().bits(pllmul_bits)
+                            w.pllsrc().hse_div_prediv().pllmul().bits(pllmul_bits)
                         });
             } else {
                 // HSI as PLL input

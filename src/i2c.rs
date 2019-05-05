@@ -1,7 +1,7 @@
 //! Inter-Integrated Circuit (I2C) bus
 
 use cast::u8;
-use stm32f30x::{I2C1, I2C2, RCC};
+use crate::pac::{I2C1, I2C2, RCC};
 
 use crate::gpio::{AltFn, PinMode, PullType};
 use crate::gpio::{HighSpeed, PushPull, AF4};
@@ -175,7 +175,7 @@ macro_rules! i2c {
                         let scll = u8(scll).unwrap();
 
                         // Configure for "fast mode" (400 KHz)
-                        self.timingr.write(|w| unsafe {
+                        self.timingr.write(|w|
                             w.presc()
                                 .bits(presc)
                                 .scll()
@@ -186,7 +186,7 @@ macro_rules! i2c {
                                 .bits(sdadel)
                                 .scldel()
                                 .bits(scldel)
-                        });
+                        );
 
                         // Enable the peripheral
                         self.cr1.write(|w| w.pe().set_bit());
@@ -213,8 +213,8 @@ macro_rules! i2c {
 
                 // START and prepare to send `bytes`
                 self.i2c.cr2.write(|w| {
-                    w.sadd1()
-                        .bits(addr)
+                    w.sadd()
+                        .bits((addr << 1) as u16)
                         .rd_wrn()
                         .clear_bit()
                         .nbytes()
@@ -261,8 +261,8 @@ macro_rules! i2c {
 
                 // START and prepare to send `bytes`
                 self.i2c.cr2.write(|w| {
-                    w.sadd1()
-                        .bits(addr)
+                    w.sadd()
+                        .bits((addr << 1) as u16)
                         .rd_wrn()
                         .clear_bit()
                         .nbytes()
@@ -287,8 +287,8 @@ macro_rules! i2c {
 
                 // reSTART and prepare to receive bytes into `buffer`
                 self.i2c.cr2.write(|w| {
-                    w.sadd1()
-                        .bits(addr)
+                    w.sadd()
+                        .bits((addr << 1) as u16)
                         .rd_wrn()
                         .set_bit()
                         .nbytes()
@@ -329,8 +329,8 @@ macro_rules! i2c {
 
                 // reSTART and prepare to receive bytes into `buffer`
                 self.i2c.cr2.write(|w| {
-                    w.sadd1()
-                        .bits(addr)
+                    w.sadd()
+                        .bits((addr << 1) as u16)
                         .rd_wrn()
                         .set_bit()
                         .nbytes()

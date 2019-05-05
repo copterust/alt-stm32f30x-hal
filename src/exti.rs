@@ -3,7 +3,7 @@
 use crate::gpio;
 use crate::syscfg::Syscfg;
 
-use stm32f30x::{self, EXTI};
+use crate::pac::{self, EXTI};
 
 /// Extension trait that contsrins the `EXTI` peripheral
 pub trait ExtiExt {
@@ -93,7 +93,7 @@ impl<E: ExternalInterrupt> Exti<E> {
 #[doc(hidden)]
 pub trait ExternalInterrupt: private::Sealed {
     #[doc(hidden)]
-    fn interrupt(&self) -> stm32f30x::Interrupt;
+    fn interrupt(&self) -> pac::Interrupt;
     #[doc(hidden)]
     fn enumeration(&self) -> ExtIn;
     #[doc(hidden)]
@@ -132,8 +132,8 @@ macro_rules! gen_exti {
                 _0: (),
             }
             impl ExternalInterrupt for $name {
-                fn interrupt(&self) -> stm32f30x::Interrupt {
-                    stm32f30x::Interrupt::$exti
+                fn interrupt(&self) -> pac::Interrupt {
+                    pac::Interrupt::$exti
                 }
 
                 fn enumeration(&self) -> ExtIn {

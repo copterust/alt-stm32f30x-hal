@@ -311,7 +311,7 @@ macro_rules! gpio {
     ($GPIOX:ident, $Gpiox:ident, $gpiox:ident, $iopxenr:ident, $iopxrst:ident, $group: ident, $PXx:ident, [
         $($PXi:ident: ($pxi:ident, $i:expr, $AFR:ident),)+
     ]) => {
-        use stm32f30x::$GPIOX;
+        use crate::pac::$GPIOX;
         /// GPIO ports
         pub struct $Gpiox {
             $(
