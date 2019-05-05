@@ -6,7 +6,7 @@ use core::sync::atomic::{self, Ordering};
 
 use hal::serial::{self, Write};
 use nb;
-use stm32f30x::{Interrupt, RCC, USART1, USART2, USART3};
+use crate::pac::{Interrupt, RCC, USART1, USART2, USART3};
 use void::Void;
 
 use crate::dma::{dma1, CircBuffer, Static, Transfer, R, W};
@@ -332,13 +332,13 @@ macro_rules! serial {
                 {
                     {
                         let buffer = buffer[0].as_mut();
-                        chan.cmar().write(|w| unsafe {
+                        chan.ch().mar.write(|w|
                             w.ma().bits(buffer.as_ptr() as usize as u32)
-                        });
-                        chan.cndtr().write(|w| unsafe{
+                        );
+                        chan.ch().ndtr.write(|w|
                             w.ndt().bits((buffer.len() * 2) as u16)
-                        });
-                        chan.cpar().write(|w| unsafe {
+                        );
+                        chan.ch().par.write(|w| unsafe {
                             w.pa().bits(&(*$USARTX::ptr()).rdr as *const _ as usize as u32)
                         });
 
@@ -348,7 +348,7 @@ macro_rules! serial {
                         atomic::compiler_fence(Ordering::SeqCst);
 
                         unsafe {
-                            chan.ccr().modify(|_, w| {
+                            chan.ch().cr.modify(|_, w| {
                                 w.mem2mem()
                                     .clear_bit()
                                     .pl()
@@ -366,7 +366,7 @@ macro_rules! serial {
                                     .dir()
                                     .clear_bit()
                             });
-                            chan.ccr().modify(|_, w| w.en().set_bit() )
+                            chan.ch().cr.modify(|_, w| w.en().set_bit() )
                         }
                     }
 
@@ -378,13 +378,13 @@ macro_rules! serial {
                 {
                     {
                         let buffer = buffer.as_mut();
-                        chan.cmar().write(|w| unsafe {
+                        chan.ch().mar.write(|w|
                             w.ma().bits(buffer.as_ptr() as usize as u32)
-                        });
-                        chan.cndtr().write(|w| unsafe{
+                        );
+                        chan.ch().ndtr.write(|w|
                             w.ndt().bits(buffer.len() as u16)
-                        });
-                        chan.cpar().write(|w| unsafe {
+                        );
+                        chan.ch().par.write(|w| unsafe {
                             w.pa().bits(&(*$USARTX::ptr()).rdr as *const _ as usize as u32)
                         });
 
@@ -394,7 +394,7 @@ macro_rules! serial {
                         atomic::compiler_fence(Ordering::SeqCst);
 
                         unsafe {
-                            chan.ccr().modify(|_, w| {
+                            chan.ch().cr.modify(|_, w| {
                                 w.mem2mem()
                                     .clear_bit()
                                     .pl()
@@ -427,17 +427,17 @@ macro_rules! serial {
                 {
                     {
                         let buffer = buffer.borrow().as_ref();
-                        chan.cpar().write(|w| unsafe {
+                        chan.ch().par.write(|w| unsafe {
                             w.pa().bits(&(*$USARTX::ptr()).tdr as *const _ as usize as u32)
                         });
 
-                        chan.cmar().write(|w| unsafe {
+                        chan.ch().mar.write(|w|
                             w.ma().bits(buffer.as_ptr() as usize as u32)
-                        });
+                        );
 
-                        chan.cndtr().write(|w| unsafe{
+                        chan.ch().ndtr.write(|w|
                             w.ndt().bits(buffer.len() as u16)
-                        });
+                        );
 
                         // TODO can we weaken this compiler barrier?
                         // NOTE(compiler_fence) operations on `buffer` should not be reordered after
@@ -445,7 +445,7 @@ macro_rules! serial {
                         atomic::compiler_fence(Ordering::SeqCst);
 
                         unsafe {
-                            chan.ccr().modify(|_, w| {
+                            chan.ch().cr.modify(|_, w| {
                                 w.mem2mem()
                                     .clear_bit()
                                     .pl()

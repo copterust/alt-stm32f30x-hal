@@ -4,7 +4,7 @@ use core::ptr;
 
 use hal::spi::{FullDuplex, Mode, Phase, Polarity};
 use nb;
-use stm32f30x::{RCC, SPI1, SPI2, SPI3};
+use crate::pac::{RCC, SPI1, SPI2, SPI3};
 
 use crate::gpio::{AltFn, PullType, AF5, AF6};
 use crate::gpio::{HighSpeed, PinMode, PushPull};
@@ -189,7 +189,7 @@ macro_rules! spi {
                             // other uses) SSI: set nss high = master mode
                             // CRCEN: hardware CRC calculation disabled
                             // BIDIMODE: 2 line unidirectional (full duplex)
-                            self.cr1.write(|w| unsafe {
+                            self.cr1.write(|w|
                                 w.cpha()
                                     .bit(mode.phase
                                          == Phase::CaptureOnSecondTransition)
@@ -211,7 +211,7 @@ macro_rules! spi {
                                     .clear_bit()
                                     .bidimode()
                                     .clear_bit()
-                            });
+                            );
 
                             Spi { spi: self,
                                   pins: outpins, }

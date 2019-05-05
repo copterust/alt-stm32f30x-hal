@@ -7,7 +7,7 @@ use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m::peripheral::SYST;
 use hal::timer::{CountDown, Periodic};
 use nb;
-use stm32f30x::{TIM2, TIM3, TIM4};
+use crate::pac::{TIM2, TIM3, TIM4};
 use void::Void;
 
 use crate::rcc::Clocks;

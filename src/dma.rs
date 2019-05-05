@@ -129,14 +129,7 @@ pub struct W;
 macro_rules! dma {
     ($($DMAX:ident: ($dmaX:ident, $dmaXen:ident, $dmaXrst:ident, {
         $($CX:ident: (
-            $ccrX:ident,
-            $CCRX:ident,
-            $cndtrX:ident,
-            $CNDTRX:ident,
-            $cparX:ident,
-            $CPARX:ident,
-            $cmarX:ident,
-            $CMARX:ident,
+            $chX:ident,
             $htifX:ident,
             $tcifX:ident,
             $chtifX:ident,
@@ -149,7 +142,7 @@ macro_rules! dma {
             pub mod $dmaX {
                 use core::sync::atomic::{self, Ordering};
 
-                use crate::stm32f30x::{$DMAX, dma1};
+                use crate::pac::{$DMAX, dma1};
 
                 use crate::dma::{CircBuffer, DmaExt, Error, Event, Half, Transfer, W};
                 use crate::rcc::AHB;
@@ -165,9 +158,9 @@ macro_rules! dma {
                         /// listen
                         pub fn listen(&mut self, event: Event) {
                             match event {
-                                Event::HalfTransfer => self.ccr().modify(|_, w| w.htie().set_bit()),
+                                Event::HalfTransfer => self.ch().cr.modify(|_, w| w.htie().set_bit()),
                                 Event::TransferComplete => {
-                                    self.ccr().modify(|_, w| w.tcie().set_bit())
+                                    self.ch().cr.modify(|_, w| w.tcie().set_bit())
                                 }
                             }
                         }
@@ -176,13 +169,17 @@ macro_rules! dma {
                         pub fn unlisten(&mut self, event: Event) {
                             match event {
                                 Event::HalfTransfer => {
-                                    self.ccr().modify(|_, w| w.htie().clear_bit())
+                                    self.ch().cr.modify(|_, w| w.htie().clear_bit())
                                 },
                                 Event::TransferComplete => {
-                                    self.ccr().modify(|_, w| w.tcie().clear_bit())
+                                    self.ch().cr.modify(|_, w| w.tcie().clear_bit())
                                 }
                             }
                         }
+
+                        pub(crate) fn ch(&mut self) -> &dma1::CH {
+                            unsafe { &(*$DMAX::ptr()).$chX }
+}
 
                         pub(crate) fn isr(&self) -> dma1::isr::R {
                             // NOTE(unsafe) atomic read with no side effects
@@ -193,25 +190,9 @@ macro_rules! dma {
                             unsafe { &(*$DMAX::ptr()).ifcr }
                         }
 
-                        pub(crate) fn ccr(&mut self) -> &dma1::$CCRX {
-                            unsafe { &(*$DMAX::ptr()).$ccrX }
-                        }
-
-                        pub(crate) fn cndtr(&mut self) -> &dma1::$CNDTRX {
-                            unsafe { &(*$DMAX::ptr()).$cndtrX }
-                        }
-
-                        pub(crate) fn cpar(&mut self) -> &dma1::$CPARX {
-                            unsafe { &(*$DMAX::ptr()).$cparX }
-                        }
-
-                        pub(crate) fn cmar(&mut self) -> &dma1::$CMARX {
-                            unsafe { &(*$DMAX::ptr()).$cmarX }
-                        }
-
-                        pub(crate) fn get_cndtr(&self) -> u32 {
+                        pub(crate) fn get_ndtr(&self) -> u32 {
                             // NOTE(unsafe) atomic read with no side effects
-                            unsafe { (*$DMAX::ptr()).$cndtrX.read().bits() }
+                            unsafe { &(*$DMAX::ptr())}.$chX.ndtr.read().bits()
                         }
 
                     }
@@ -298,7 +279,7 @@ macro_rules! dma {
 
                             self.channel.ifcr().write(|w| w.$cgifX().set_bit());
 
-                            self.channel.ccr().modify(|_, w| w.en().clear_bit());
+                            self.channel.ch().cr.modify(|_, w| w.en().clear_bit());
 
                             // TODO can we weaken this compiler barrier?
                             // NOTE(compiler_fence) operations on `buffer` should not be reordered
@@ -315,7 +296,7 @@ macro_rules! dma {
                         where
                             BUFFER: AsRef<[T]>,
                         {
-                            let pending = self.channel.get_cndtr() as usize;
+                            let pending = self.channel.get_ndtr() as usize;
 
                             let slice = self.buffer.as_ref();
                             let capacity = slice.len();
@@ -333,7 +314,7 @@ macro_rules! dma {
 
                         // reset the DMA control registers (stops all on-going transfers)
                         $(
-                            self.$ccrX.reset();
+                            self.$chX.cr.reset();
                         )+
 
                         Channels((), $($CX { _0: () }),+)
@@ -345,60 +326,39 @@ macro_rules! dma {
 }
 
 dma! {
-    DMA1: (dma1, dmaen, dma1rst, {
+    DMA1: (dma1, dma1en, dma1rst, {
         C1: (
-            ccr1, CCR1,
-            cndtr1, CNDTR1,
-            cpar1, CPAR1,
-            cmar1, CMAR1,
+            ch1,
             htif1, tcif1,
             chtif1, ctcif1, cgif1
         ),
         C2: (
-            ccr2, CCR2,
-            cndtr2, CNDTR2,
-            cpar2, CPAR2,
-            cmar2, CMAR2,
+            ch2,
             htif2, tcif2,
             chtif2, ctcif2, cgif2
         ),
         C3: (
-            ccr3, CCR3,
-            cndtr3, CNDTR3,
-            cpar3, CPAR3,
-            cmar3, CMAR3,
+            ch3,
             htif3, tcif3,
             chtif3, ctcif3, cgif3
         ),
         C4: (
-            ccr4, CCR4,
-            cndtr4, CNDTR4,
-            cpar4, CPAR4,
-            cmar4, CMAR4,
+            ch4,
             htif4, tcif4,
             chtif4, ctcif4, cgif4
         ),
         C5: (
-            ccr5, CCR5,
-            cndtr5, CNDTR5,
-            cpar5, CPAR5,
-            cmar5, CMAR5,
+            ch5,
             htif5, tcif5,
             chtif5, ctcif5, cgif5
         ),
         C6: (
-            ccr6, CCR6,
-            cndtr6, CNDTR6,
-            cpar6, CPAR6,
-            cmar6, CMAR6,
+            ch6,
             htif6, tcif6,
             chtif6, ctcif6, cgif6
         ),
         C7: (
-            ccr7, CCR7,
-            cndtr7, CNDTR7,
-            cpar7, CPAR7,
-            cmar7, CMAR7,
+            ch7,
             htif7, tcif7,
             chtif7, ctcif7, cgif7
         ),
@@ -406,42 +366,27 @@ dma! {
 
     DMA2: (dma2, dma2en, dma2rst, {
         C1: (
-            ccr1, CCR1,
-            cndtr1, CNDTR1,
-            cpar1, CPAR1,
-            cmar1, CMAR1,
+            ch1,
             htif1, tcif1,
             chtif1, ctcif1, cgif1
         ),
         C2: (
-            ccr2, CCR2,
-            cndtr2, CNDTR2,
-            cpar2, CPAR2,
-            cmar2, CMAR2,
+            ch2,
             htif2, tcif2,
             chtif2, ctcif2, cgif2
         ),
         C3: (
-            ccr3, CCR3,
-            cndtr3, CNDTR3,
-            cpar3, CPAR3,
-            cmar3, CMAR3,
+            ch3,
             htif3, tcif3,
             chtif3, ctcif3, cgif3
         ),
         C4: (
-            ccr4, CCR4,
-            cndtr4, CNDTR4,
-            cpar4, CPAR4,
-            cmar4, CMAR4,
+            ch4,
             htif4, tcif4,
             chtif4, ctcif4, cgif4
         ),
         C5: (
-            ccr5, CCR5,
-            cndtr5, CNDTR5,
-            cpar5, CPAR5,
-            cmar5, CMAR5,
+            ch5,
             htif5, tcif5,
             chtif5, ctcif5, cgif5
         ),
