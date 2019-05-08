@@ -170,133 +170,38 @@ pub trait AltFnNum {
     fn alt_fn_num(&self) -> U4;
 }
 
-/// AF0
-pub struct AF0;
-impl AltFnNum for AF0 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0000
+macro_rules! gen_af {
+    ([$(($af:ident, $bit:ident)) , +]) => {
+        $(
+            /// $af
+            pub struct $af;
+            impl AltFnNum for $af {
+                fn alt_fn_num(&self) -> U4 {
+                    U4::$bit
+                }
+            }
+        )+
     }
 }
 
-/// AF1
-pub struct AF1;
-impl AltFnNum for AF1 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0001
-    }
-}
-
-/// AF2
-pub struct AF2;
-impl AltFnNum for AF2 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0010
-    }
-}
-
-/// AF3
-pub struct AF3;
-impl AltFnNum for AF3 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0011
-    }
-}
-
-/// AF4
-pub struct AF4;
-impl AltFnNum for AF4 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0100
-    }
-}
-
-/// AF5
-pub struct AF5;
-impl AltFnNum for AF5 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0101
-    }
-}
-
-/// AF6
-pub struct AF6;
-impl AltFnNum for AF6 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0110
-    }
-}
-
-/// AF7
-pub struct AF7;
-impl AltFnNum for AF7 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B0111
-    }
-}
-
-/// AF8
-pub struct AF8;
-impl AltFnNum for AF8 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1000
-    }
-}
-
-/// AF9
-pub struct AF9;
-impl AltFnNum for AF9 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1001
-    }
-}
-
-/// AF10
-pub struct AF10;
-impl AltFnNum for AF10 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1010
-    }
-}
-
-/// AF11
-pub struct AF11;
-impl AltFnNum for AF11 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1011
-    }
-}
-
-/// AF12
-pub struct AF12;
-impl AltFnNum for AF12 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1100
-    }
-}
-
-/// AF13
-pub struct AF13;
-impl AltFnNum for AF13 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1101
-    }
-}
-
-/// AF14
-pub struct AF14;
-impl AltFnNum for AF14 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1110
-    }
-}
-
-/// AF15
-pub struct AF15;
-impl AltFnNum for AF15 {
-    fn alt_fn_num(&self) -> U4 {
-        U4::B1111
-    }
-}
+gen_af!([
+    (AF0,  B0000),
+    (AF1,  B0001),
+    (AF2,  B0010),
+    (AF3,  B0011),
+    (AF4,  B0100),
+    (AF5,  B0101),
+    (AF6,  B0110),
+    (AF7,  B0111),
+    (AF8,  B1000),
+    (AF9,  B1001),
+    (AF10, B1010),
+    (AF11, B1011),
+    (AF12, B1100),
+    (AF13, B1101),
+    (AF14, B1110),
+    (AF15, B1111)
+]);
 
 /// Extension trait to split a GPIO peripheral in independent pins and registers
 pub trait GpioExt {
