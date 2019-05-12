@@ -8,6 +8,7 @@ use crate::rcc::AHB;
 use bobbin_bits::*;
 use core::intrinsics::transmute;
 use core::marker::PhantomData;
+#[allow(deprecated)]
 use hal::digital::{toggleable, InputPin, OutputPin, StatefulOutputPin};
 
 /// Marker trait for any pin
@@ -286,6 +287,7 @@ macro_rules! gpio {
             _pin_mode: PhantomData<PM>
         }
 
+        #[allow(deprecated)]
         impl<PT: PullType, OT: OutputType, OS: OutputSpeed>
             OutputPin for $PXx<PT, Output<OT, OS>> {
                 fn set_high(&mut self) {
@@ -299,6 +301,7 @@ macro_rules! gpio {
                 }
             }
 
+        #[allow(deprecated)]
         impl<PT: PullType,
         AN: AltFnNum,
         OT: OutputType,
@@ -314,6 +317,7 @@ macro_rules! gpio {
             }
         }
 
+        #[allow(deprecated)]
         impl<PT: PullType> InputPin for $PXx<PT, Input> {
             fn is_high(&self) -> bool {
                 !self.is_low()
@@ -463,6 +467,7 @@ macro_rules! gpio {
                 }
             }
 
+            #[allow(deprecated)]
             impl<PT: PullType, OT:OutputType, OS:OutputSpeed> OutputPin
                 for $PXi<PT, Output<OT, OS>> {
                     fn set_high(&mut self) {
@@ -476,6 +481,7 @@ macro_rules! gpio {
                     }
                 }
 
+            #[allow(deprecated)]
             impl<PT: PullType, AN: AltFnNum, OT:OutputType, OS:OutputSpeed> OutputPin
                 for $PXi<PT, AltFn<AN, OT, OS>> {
                     fn set_high(&mut self) {
@@ -489,6 +495,7 @@ macro_rules! gpio {
                     }
                 }
 
+            #[allow(deprecated)]
             impl<PT: PullType, OT:OutputType, OS:OutputSpeed> StatefulOutputPin
                 for $PXi<PT, Output<OT, OS>> {
                     fn is_set_high(&self) -> bool {
@@ -501,9 +508,11 @@ macro_rules! gpio {
                     }
                 }
 
+            #[allow(deprecated)]
             impl<PT: PullType, OT:OutputType, OS:OutputSpeed> toggleable::Default
                 for $PXi<PT, Output<OT, OS>> {}
 
+            #[allow(deprecated)]
             impl<PT: PullType> InputPin for $PXi<PT, Input> {
                 fn is_high(&self) -> bool {
                     !self.is_low()

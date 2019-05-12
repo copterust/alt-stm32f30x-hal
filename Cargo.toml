@@ -24,7 +24,7 @@ version = "0.7.0"
 
 [dependencies.hal]
 features = ["unproven"]
-version = "0.2.2"
+version = "0.2.3"
 package = "embedded-hal"
 
 [dependencies.void]

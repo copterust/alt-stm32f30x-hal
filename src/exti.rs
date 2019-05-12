@@ -20,7 +20,7 @@ pub struct Exti<E: ExternalInterrupt> {
 impl<E: ExternalInterrupt> Exti<E> {
     /// Bind interrupt to input pin
     pub fn bind<GP>(&mut self, pin: GP, syscfg: &mut Syscfg)
-        where GP: gpio::GPIOPin + hal::digital::InputPin
+        where GP: gpio::GPIOPin + hal::digital::v2::InputPin
     {
         let exti = unsafe { &(*EXTI::ptr()) };
 
