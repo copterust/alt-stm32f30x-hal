@@ -30,7 +30,9 @@ pub use hal::blocking::spi::{
 };
 pub use hal::digital::v2::InputPin as _embedded_hal_digital_InputPin;
 pub use hal::digital::v2::OutputPin as _embedded_hal_digital_OutputPin;
+pub use hal::digital::v2::StatefulOutputPin as _embedded_hal_digital_StatefulOutputPin;
 pub use hal::digital::v2::ToggleableOutputPin as _embedded_hal_digital_ToggleableOutputPin;
+pub use hal::digital::v2_compat::*;
 pub use hal::serial::Read as _embedded_hal_serial_Read;
 pub use hal::serial::Write as _embedded_hal_serial_Write;
 pub use hal::spi::FullDuplex as _embedded_hal_spi_FullDuplex;
