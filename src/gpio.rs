@@ -184,24 +184,22 @@ macro_rules! gen_af {
     }
 }
 
-gen_af!([
-    (AF0,  B0000),
-    (AF1,  B0001),
-    (AF2,  B0010),
-    (AF3,  B0011),
-    (AF4,  B0100),
-    (AF5,  B0101),
-    (AF6,  B0110),
-    (AF7,  B0111),
-    (AF8,  B1000),
-    (AF9,  B1001),
-    (AF10, B1010),
-    (AF11, B1011),
-    (AF12, B1100),
-    (AF13, B1101),
-    (AF14, B1110),
-    (AF15, B1111)
-]);
+gen_af!([(AF0, B0000),
+         (AF1, B0001),
+         (AF2, B0010),
+         (AF3, B0011),
+         (AF4, B0100),
+         (AF5, B0101),
+         (AF6, B0110),
+         (AF7, B0111),
+         (AF8, B1000),
+         (AF9, B1001),
+         (AF10, B1010),
+         (AF11, B1011),
+         (AF12, B1100),
+         (AF13, B1101),
+         (AF14, B1110),
+         (AF15, B1111)]);
 
 /// Extension trait to split a GPIO peripheral in independent pins and registers
 pub trait GpioExt {
