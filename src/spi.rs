@@ -2,9 +2,9 @@
 
 use core::ptr;
 
+use crate::pac::{RCC, SPI1, SPI2, SPI3};
 use hal::spi::{FullDuplex, Mode, Phase, Polarity};
 use nb;
-use crate::pac::{RCC, SPI1, SPI2, SPI3};
 
 use crate::gpio::{AltFn, PullType, AF5, AF6};
 use crate::gpio::{HighSpeed, PinMode, PushPull};
@@ -169,13 +169,13 @@ macro_rules! spi {
 
                             let br = match clocks.$pclkX().0 / freq.into().0 {
                                 0 => unreachable!(),
-                                1...2 => 0b000,
-                                3...5 => 0b001,
-                                6...11 => 0b010,
-                                12...23 => 0b011,
-                                24...39 => 0b100,
-                                40...95 => 0b101,
-                                96...191 => 0b110,
+                                1..=2 => 0b000,
+                                3..=5 => 0b001,
+                                6..=11 => 0b010,
+                                12..=23 => 0b011,
+                                24..=39 => 0b100,
+                                40..=95 => 0b101,
+                                96..=191 => 0b110,
                                 _ => 0b111,
                             };
 
@@ -283,6 +283,8 @@ macro_rules! spi {
         {}
     };
 }
+
+//// DEFINE traits for Spi1Sck, Spi1Miso or, even better Sck<dev = SPI1>
 
 spi!(SPI1,
      apb2enr,
