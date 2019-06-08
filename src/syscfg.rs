@@ -12,7 +12,8 @@ pub trait SyscfgExt {
 
 impl SyscfgExt for SYSCFG {
     fn constrain(self, apb2: &mut rcc::APB2) -> Syscfg {
-        apb2.enr().write(|w| w.syscfgen().enabled());
+        apb2.enr().modify(|_, w| w.syscfgen().enabled());
+
         Syscfg { _0: () }
     }
 }
