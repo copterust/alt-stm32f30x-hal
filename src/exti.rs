@@ -30,46 +30,28 @@ impl<E: ExternalInterrupt> Exti<E> {
         // Setup pin group
         match self.ei.enumeration() {
             ExtIn::EXTI0 => {
-                syscfg.exticr1().modify(|r, w| unsafe {
-                                    w.bits(r.bits()
-                                           | ((r.exti0().bits() | group_bits)
-                                              as u32))
-                                });
+                syscfg.exticr1()
+                      .modify(|_, w| unsafe { w.exti0().bits(group_bits) });
             }
             ExtIn::EXTI1 => {
-                syscfg.exticr1().modify(|r, w| unsafe {
-                                    w.bits(r.bits()
-                                           | ((r.exti1().bits() | group_bits)
-                                              as u32))
-                                });
+                syscfg.exticr1()
+                      .modify(|_, w| unsafe { w.exti1().bits(group_bits) });
             }
             ExtIn::EXTI2 => {
-                syscfg.exticr1().modify(|r, w| unsafe {
-                                    w.bits(r.bits()
-                                           | ((r.exti2().bits() | group_bits)
-                                              as u32))
-                                });
+                syscfg.exticr1()
+                      .modify(|_, w| unsafe { w.exti2().bits(group_bits) });
             }
             ExtIn::EXTI3 => {
-                syscfg.exticr1().modify(|r, w| unsafe {
-                                    w.bits(r.bits()
-                                           | ((r.exti3().bits() | group_bits)
-                                              as u32))
-                                });
+                syscfg.exticr1()
+                      .modify(|_, w| unsafe { w.exti3().bits(group_bits) });
             }
             ExtIn::EXTI4 => {
-                syscfg.exticr2().modify(|r, w| unsafe {
-                                    w.bits(r.bits()
-                                           | ((r.exti4().bits() | group_bits)
-                                              as u32))
-                                });
+                syscfg.exticr2()
+                      .modify(|_, w| unsafe { w.exti4().bits(group_bits) });
             }
             ExtIn::EXTI13 => {
-                syscfg.exticr4().modify(|r, w| unsafe {
-                                    w.bits(r.bits()
-                                           | ((r.exti13().bits() | group_bits)
-                                              as u32))
-                                });
+                syscfg.exticr4()
+                      .modify(|_, w| unsafe { w.exti13().bits(group_bits) });
             }
         }
 
@@ -88,11 +70,13 @@ impl<E: ExternalInterrupt> Exti<E> {
 
     /// Clears pending status on external interrupt
     pub fn unpend(&mut self) {
-        let mask: u32 = 15;
-        let offset: u32 = self.ei.index() as u32;
+        let mask: bool = true;
+        let offset: u8 = self.ei.index();
         let exti = unsafe { &(*EXTI::ptr()) };
+
         exti.pr1.modify(|r, w| unsafe {
-                    w.bits((r.bits() & !(mask << offset)) | (1 << offset))
+                    w.bits((r.bits() & !((mask as u32) << offset))
+                           | (((true & mask) as u32) << offset))
                 });
     }
 }
@@ -107,6 +91,7 @@ pub trait ExternalInterrupt: private::Sealed {
     fn index(&self) -> u8;
 }
 
+// XXX: re do this, without enum
 #[doc(hidden)]
 pub enum ExtIn {
     /// 0,
