@@ -15,8 +15,6 @@ use hal::blocking::i2c::{Read, Write, WriteRead};
 /// I2C error
 #[derive(Debug)]
 pub enum Error {
-    /// Stop condition detected
-    Stop,
     /// NACK received, i.e. communication not acknowledged by peripheral
     NACK,
     /// Bus error
@@ -63,8 +61,6 @@ macro_rules! busy_wait {
                 return Err(Error::Arbitration);
             } else if isr.nackf().bit_is_set() {
                 return Err(Error::NACK);
-            } else if isr.stopf().bit_is_set() {
-                return Err(Error::Stop);
             } else if isr.$flag().bit_is_set() {
                 break;
             } else {
