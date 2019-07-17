@@ -17,16 +17,84 @@ pub struct Exti<E: ExternalInterrupt> {
     ei: E,
 }
 
+/// Interrupt bound to pin
+pub struct BoundInterrupt<GP> {
+    _pin: GP,
+    offset: u8,
+}
+
+impl<GP> BoundInterrupt<GP> where GP: gpio::GPIOPin
+{
+    /// Clears pending status on external interrupt
+    pub fn unpend(&mut self) {
+        let mask: bool = true;
+        let exti = unsafe { &(*EXTI::ptr()) };
+
+        exti.pr1.modify(|r, w| unsafe {
+                    w.bits((r.bits() & !((mask as u32) << self.offset))
+                           | (((true & mask) as u32) << self.offset))
+                });
+    }
+
+    // /// Disconnect pin from external interrupt
+    // pub fn free(self) -> (GP, E) {
+    //     let exti = unsafe { &(*EXTI::ptr()) };
+    //     let group_bits = bits_of_gpio_group(&pin.group());
+    //     // Setup pin group
+    //     match self.ei.enumeration() {
+    //         ExtIn::EXTI0 => {
+    //             syscfg.exticr1()
+    //                   .modify(|_, w| unsafe { w.exti0().bits(group_bits) });
+    //         }
+    //         ExtIn::EXTI1 => {
+    //             syscfg.exticr1()
+    //                   .modify(|_, w| unsafe { w.exti1().bits(group_bits) });
+    //         }
+    //         ExtIn::EXTI2 => {
+    //             syscfg.exticr1()
+    //                   .modify(|_, w| unsafe { w.exti2().bits(group_bits) });
+    //         }
+    //         ExtIn::EXTI3 => {
+    //             syscfg.exticr1()
+    //                   .modify(|_, w| unsafe { w.exti3().bits(group_bits) });
+    //         }
+    //         ExtIn::EXTI4 => {
+    //             syscfg.exticr2()
+    //                   .modify(|_, w| unsafe { w.exti4().bits(group_bits) });
+    //         }
+    //         ExtIn::EXTI13 => {
+    //             syscfg.exticr4()
+    //                   .modify(|_, w| unsafe { w.exti13().bits(group_bits) });
+    //         }
+    //     }
+
+    //     let offset = pin.index() as u32;
+    //     // Enable external interrupt on rise
+    //     exti.imr1.modify(|r, w| unsafe {
+    //                  w.bits((r.bits() & !(0b1 << offset)) | (1 << offset))
+    //              });
+    //     exti.emr1.modify(|r, w| unsafe {
+    //                  w.bits((r.bits() & !(0b1 << offset)) | (1 << offset))
+    //              });
+    //     exti.rtsr1.modify(|r, w| unsafe {
+    //                   w.bits((r.bits() & !(0b1 << offset)) | (1 << offset))
+    //               });
+    // }
+}
+
 impl<E: ExternalInterrupt> Exti<E> {
-    /// Bind interrupt to input pin
-    pub fn bind<GP>(&mut self, pin: GP, syscfg: &mut Syscfg)
+    /// Bind interrupt to input pin. Returns bound interrput that can be used to
+    /// unpend.
+    pub fn bind<GP>(&mut self,
+                    pin: GP,
+                    syscfg: &mut Syscfg)
+                    -> BoundInterrupt<GP>
         where GP: gpio::GPIOPin + hal::digital::v2::InputPin
     {
         let exti = unsafe { &(*EXTI::ptr()) };
 
         let group_bits = bits_of_gpio_group(&pin.group());
 
-        // XXX: modify, instead of write
         // Setup pin group
         match self.ei.enumeration() {
             ExtIn::EXTI0 => {
@@ -66,18 +134,9 @@ impl<E: ExternalInterrupt> Exti<E> {
         exti.rtsr1.modify(|r, w| unsafe {
                       w.bits((r.bits() & !(0b1 << offset)) | (1 << offset))
                   });
-    }
 
-    /// Clears pending status on external interrupt
-    pub fn unpend(&mut self) {
-        let mask: bool = true;
-        let offset: u8 = self.ei.index();
-        let exti = unsafe { &(*EXTI::ptr()) };
-
-        exti.pr1.modify(|r, w| unsafe {
-                    w.bits((r.bits() & !((mask as u32) << offset))
-                           | (((true & mask) as u32) << offset))
-                });
+        BoundInterrupt { _pin: pin,
+                         offset: self.ei.index() }
     }
 }
 
