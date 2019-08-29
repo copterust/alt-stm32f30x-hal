@@ -198,6 +198,11 @@ macro_rules! dma {
                     }
 
                     impl<B> CircBuffer<B, $CX> {
+                        /// clears interrupt
+                        pub fn clear_interrupt(&mut self) {
+                            self.channel.ifcr().write(|w| w.$cgifX().set_bit());
+                        }
+
                         /// Peeks into the readable half of the buffer
                         pub fn peek<R, F>(&mut self, f: F) -> Result<R, Error>
                             where
@@ -212,7 +217,6 @@ macro_rules! dma {
 
                             // XXX does this need a compiler barrier?
                             let ret = f(buf, half_being_read);
-
 
                             let isr = self.channel.isr();
                             let first_half_is_done = isr.$htifX().bit_is_set();
