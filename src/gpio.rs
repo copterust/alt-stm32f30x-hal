@@ -9,7 +9,7 @@ use bobbin_bits::*;
 use core::intrinsics::transmute;
 use core::marker::PhantomData;
 #[allow(deprecated)]
-use hal::digital::{toggleable, v2, InputPin, OutputPin, StatefulOutputPin};
+use hal::digital::{v2, InputPin, OutputPin, StatefulOutputPin};
 
 /// Marker trait for any pin
 pub trait GPIOPin {
@@ -507,10 +507,6 @@ macro_rules! gpio {
                         unsafe { (*$GPIOX::ptr()).odr.read().bits() & (1 << $i) == 0 }
                     }
                 }
-
-            #[allow(deprecated)]
-            impl<PT: PullType, OT:OutputType, OS:OutputSpeed> toggleable::Default
-                for $PXi<PT, Output<OT, OS>> {}
 
             impl<PT: PullType, OT:OutputType, OS:OutputSpeed> v2::toggleable::Default
                 for $PXi<PT, Output<OT, OS>> {}
