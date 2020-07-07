@@ -20,7 +20,7 @@ bobbin-bits = "0.1.1"
 bitrate = "0.1.1"
 
 [dependencies.stm32f3]
-version = "0.7.0"
+version = "0.11.0"
 
 [dependencies.hal]
 features = ["unproven"]

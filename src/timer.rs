@@ -1,5 +1,6 @@
 //! Timers
 
+use crate::pac::{TIM2, TIM3, TIM4};
 use bobbin_bits::*;
 use cast::{u16, u32};
 use core::intrinsics::transmute;
@@ -7,7 +8,6 @@ use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m::peripheral::SYST;
 use hal::timer::{CountDown, Periodic};
 use nb;
-use crate::pac::{TIM2, TIM3, TIM4};
 use void::Void;
 
 use crate::rcc::Clocks;
@@ -114,7 +114,6 @@ pub mod syst {
     }
 
     impl Periodic for Timer {}
-
 }
 
 /// Trait for channel state
@@ -334,25 +333,15 @@ macro_rules! tim {
                 pub fn mode<NM: ChMode>(self, nm: NM) -> Channel<CN, NM> {
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
                     let mode_bits: u8 = nm.channel_mode().into();
-                    unsafe {
-                        match CN::channel_number() {
-                            U2::B00 => {
-                                tim.ccmr1_output
-                                   .modify(|_, w| w.oc1m().bits(mode_bits))
-                            }
-                            U2::B01 => {
-                                tim.ccmr1_output
-                                   .modify(|_, w| w.oc2m().bits(mode_bits))
-                            }
-                            U2::B10 => {
-                                tim.ccmr2_output
-                                   .modify(|_, w| w.oc3m().bits(mode_bits))
-                            }
-                            U2::B11 => {
-                                tim.ccmr2_output
-                                   .modify(|_, w| w.oc4m().bits(mode_bits))
-                            }
-                        }
+                    match CN::channel_number() {
+                        U2::B00 => tim.ccmr1_output()
+                                      .modify(|_, w| w.oc1m().bits(mode_bits)),
+                        U2::B01 => tim.ccmr1_output()
+                                      .modify(|_, w| w.oc2m().bits(mode_bits)),
+                        U2::B10 => tim.ccmr2_output()
+                                      .modify(|_, w| w.oc3m().bits(mode_bits)),
+                        U2::B11 => tim.ccmr2_output()
+                                      .modify(|_, w| w.oc4m().bits(mode_bits)),
                     }
 
                     unsafe { transmute(self) }
@@ -365,22 +354,24 @@ macro_rules! tim {
                     let mask = true;
                     if index < 2 {
                         let offset: u32 = 3 + (index * 4);
-                        tim.ccmr1_output.modify(|r, w| unsafe {
-                                            w.bits((r.bits()
-                                                    & !((mask as u32)
+                        tim.ccmr1_output().modify(|r, w| unsafe {
+                                              w.bits((r.bits()
+                                                      & !((mask as u32)
+                                                          << offset))
+                                                     | (((value & mask)
+                                                         as u32)
                                                         << offset))
-                                                   | (((value & mask) as u32)
-                                                      << offset))
-                                        })
+                                          })
                     } else {
                         let offset: u32 = 3 + (index - 2) * 4;
-                        tim.ccmr2_output.modify(|r, w| unsafe {
-                                            w.bits((r.bits()
-                                                    & !((mask as u32)
+                        tim.ccmr2_output().modify(|r, w| unsafe {
+                                              w.bits((r.bits()
+                                                      & !((mask as u32)
+                                                          << offset))
+                                                     | (((value & mask)
+                                                         as u32)
                                                         << offset))
-                                                   | (((value & mask) as u32)
-                                                      << offset))
-                                        })
+                                          })
                     };
                 }
             }
@@ -499,11 +490,13 @@ macro_rules! tim {
             impl Timer<PwmFree> {
                 /// Consumes timer and returns pwm channels and timer without
                 /// them.
-                pub fn use_pwm(self) -> ((Channel<CH1, Inactive>,
-                                          Channel<CH2, Inactive>,
-                                          Channel<CH3, Inactive>,
-                                          Channel<CH4, Inactive>),
-                                         Timer<PwmTaken>) {
+                pub fn use_pwm(
+                    self)
+                    -> ((Channel<CH1, Inactive>,
+                         Channel<CH2, Inactive>,
+                         Channel<CH3, Inactive>,
+                         Channel<CH4, Inactive>),
+                        Timer<PwmTaken>) {
                     let ch1: Channel<CH1, Inactive> =
                         Channel { _index: PhantomData,
                                   _mode: PhantomData };
@@ -524,21 +517,23 @@ macro_rules! tim {
             impl Timer<PwmTaken> {
                 /// Returns pwm channels back.
                 pub fn return_pwm<M1, M2, M3, M4>(self,
-                                                  _channels: (Channel<CH1, M1>,
-                                                              Channel<CH2, M2>,
-                                                              Channel<CH3, M3>,
-                                                              Channel<CH4, M4>))
+                                                  _channels: (Channel<CH1,
+                                                           M1>,
+                                                   Channel<CH2,
+                                                           M2>,
+                                                   Channel<CH3,
+                                                           M3>,
+                                                   Channel<CH4,
+                                                           M4>))
                                                   -> Timer<PwmFree>
-                where
-                    M1: ChMode,
-                    M2: ChMode,
-                    M3: ChMode,
-                    M4: ChMode
+                    where M1: ChMode,
+                          M2: ChMode,
+                          M3: ChMode,
+                          M4: ChMode
                 {
                     unsafe { transmute(self) }
                 }
             }
-
         }
     };
 }
