@@ -15,16 +15,16 @@ features = ["stm32f303", "rt"]
 
 [dependencies]
 cortex-m = ">=0.7"
-nb = "0.1.0"
+nb = "1.0.0"
 bobbin-bits = "0.1.1"
 bitrate = "0.1.1"
 
 [dependencies.stm32f3]
-version = "0.11.0"
+version = "0.12.1"
 
 [dependencies.hal]
 features = ["unproven"]
-version = "0.2.3"
+version = "0.2.4"
 package = "embedded-hal"
 
 [dependencies.void]
@@ -33,7 +33,7 @@ version = "1.0.2"
 
 [dependencies.cast]
 default-features = false
-version = "0.2.2"
+version = "0.2.3"
 
 
 [features]
