@@ -7,14 +7,14 @@ keywords = ["arm", "cortex-m", "stm32", "hal"]
 license = "MIT OR Apache-2.0"
 name = "alt-stm32f30x-hal"
 repository = "https://github.com/copterust/alt-stm32f30x-hal"
-version = "0.24.1-alpha.0"
+version = "0.30.0-alpha.0"
 edition = "2018"
 
 [package.metadata.docs.rs]
 features = ["stm32f303", "rt"]
 
 [dependencies]
-cortex-m = ">=0.5.8,<0.7"
+cortex-m = ">=0.7"
 nb = "0.1.0"
 bobbin-bits = "0.1.1"
 bitrate = "0.1.1"
