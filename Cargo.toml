@@ -20,7 +20,7 @@ bobbin-bits = "0.1.1"
 bitrate = "0.1.1"
 
 [dependencies.stm32f3]
-version = "0.12.1"
+version = "0.12"
 package = "stm32f3-copterust"
 
 [dependencies.hal]
