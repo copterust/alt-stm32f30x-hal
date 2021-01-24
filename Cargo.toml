@@ -7,7 +7,7 @@ keywords = ["arm", "cortex-m", "stm32", "hal"]
 license = "MIT OR Apache-2.0"
 name = "alt-stm32f30x-hal"
 repository = "https://github.com/copterust/alt-stm32f30x-hal"
-version = "0.40.1"
+version = "0.40.2-alpha.0"
 edition = "2018"
 
 [package.metadata.docs.rs]
