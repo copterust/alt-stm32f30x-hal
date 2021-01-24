@@ -4,9 +4,9 @@ use core::marker::PhantomData;
 use core::ptr;
 use core::sync::atomic::{self, Ordering};
 
+use crate::pac::{Interrupt, RCC, USART1, USART2, USART3};
 use hal::serial::{self, Write};
 use nb;
-use crate::pac::{Interrupt, RCC, USART1, USART2, USART3};
 use void::Void;
 
 use crate::dma::{dma1, CircBuffer, Static, Transfer, R, W};
@@ -332,8 +332,9 @@ macro_rules! serial {
                 {
                     {
                         let buffer = buffer[0].as_mut();
-                        chan.ch().mar.write(|w|
-                            w.ma().bits(buffer.as_ptr() as usize as u32)
+                        chan.ch().mar.write(|w| unsafe {
+                                w.ma().bits(buffer.as_ptr() as usize as u32)
+                            }
                         );
                         chan.ch().ndtr.write(|w|
                             w.ndt().bits((buffer.len() * 2) as u16)
@@ -378,9 +379,9 @@ macro_rules! serial {
                 {
                     {
                         let buffer = buffer.as_mut();
-                        chan.ch().mar.write(|w|
+                        chan.ch().mar.write(|w| unsafe {
                             w.ma().bits(buffer.as_ptr() as usize as u32)
-                        );
+                        });
                         chan.ch().ndtr.write(|w|
                             w.ndt().bits(buffer.len() as u16)
                         );
@@ -431,9 +432,9 @@ macro_rules! serial {
                             w.pa().bits(&(*$USARTX::ptr()).tdr as *const _ as usize as u32)
                         });
 
-                        chan.ch().mar.write(|w|
+                        chan.ch().mar.write(|w| unsafe {
                             w.ma().bits(buffer.as_ptr() as usize as u32)
-                        );
+                        });
 
                         chan.ch().ndtr.write(|w|
                             w.ndt().bits(buffer.len() as u16)
