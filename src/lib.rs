@@ -27,6 +27,7 @@
 
 #![deny(missing_docs)]
 #![deny(warnings)]
+#![allow(unused_unsafe)]
 #![no_std]
 
 #[cfg(feature = "stm32f301")]

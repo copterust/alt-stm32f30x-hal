@@ -288,13 +288,19 @@ macro_rules! tim {
                 fn write_ccr(&mut self, value: u32) {
                     let index = CN::channel_number();
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
-                    unsafe {
-                        match index {
-                            U2::B00 => tim.ccr1.write(|w| w.bits(value)),
-                            U2::B01 => tim.ccr2.write(|w| w.bits(value)),
-                            U2::B10 => tim.ccr3.write(|w| w.bits(value)),
-                            U2::B11 => tim.ccr4.write(|w| w.bits(value)),
-                        }
+                    match index {
+                        U2::B00 => tim.ccr1().write(|w| unsafe {
+                            w.bits(value)
+                        }),
+                        U2::B01 => tim.ccr2().write(|w| unsafe {
+                            w.bits(value)
+                        }),
+                        U2::B10 => tim.ccr3().write(|w| unsafe {
+                            w.bits(value)
+                        }),
+                        U2::B11 => tim.ccr4().write(|w| unsafe {
+                            w.bits(value)
+                        }),
                     }
                 }
 
@@ -302,10 +308,10 @@ macro_rules! tim {
                     let index = CN::channel_number();
                     let tim = unsafe { &(*$TIMSRC::ptr()) };
                     match index {
-                        U2::B00 => tim.ccr1.read().bits(),
-                        U2::B01 => tim.ccr2.read().bits(),
-                        U2::B10 => tim.ccr3.read().bits(),
-                        U2::B11 => tim.ccr4.read().bits(),
+                        U2::B00 => tim.ccr1().read().bits(),
+                        U2::B01 => tim.ccr2().read().bits(),
+                        U2::B10 => tim.ccr3().read().bits(),
+                        U2::B11 => tim.ccr4().read().bits(),
                     }
                 }
 
