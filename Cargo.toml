@@ -14,13 +14,13 @@ edition = "2018"
 features = ["stm32f303", "rt"]
 
 [dependencies]
-cortex-m = "0.7.4"
+cortex-m = "0.7.6"
 nb = "1.0.0"
 bobbin-bits = "0.1.1"
 bitrate = "0.1.1"
 
 [dependencies.stm32f3]
-version = "0.14.0"
+version = "0.15.1"
 package = "stm32f3"
 
 [dependencies.hal]
